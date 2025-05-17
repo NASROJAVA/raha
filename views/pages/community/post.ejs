@@ -1,0 +1,122 @@
+<%- contentFor('title') %>
+<%= post.title %> | راحة
+
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <a href="/community" class="text-primary hover:underline flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      العودة إلى المجتمع
+    </a>
+  </div>
+
+  <% if (success) { %>
+    <div class="bg-green-100 border-r-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+      <p class="font-bold">تم بنجاح!</p>
+      <p><%= success %></p>
+    </div>
+  <% } %>
+
+  <% if (error) { %>
+    <div class="bg-red-100 border-r-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+      <p class="font-bold">خطأ!</p>
+      <p><%= error %></p>
+    </div>
+  <% } %>
+
+  <!-- Post Content -->
+  <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+    <div class="flex justify-between items-start mb-4">
+      <h1 class="text-2xl font-bold text-gray-800"><%= post.title %></h1>
+      
+      <% if (user && user.id === post.user_id) { %>
+        <div class="flex">
+          <a href="/community/post/<%= post.id %>/edit" class="text-blue-600 hover:text-blue-800 ml-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </a>
+          <form action="/community/post/<%= post.id %>/delete" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنشور؟');" class="inline">
+            <button type="submit" class="text-red-600 hover:text-red-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+    
+    <div class="flex items-center text-sm text-gray-500 mb-6">
+      <img src="/images/avatars/<%= post.user_id %>.jpg" onerror="this.src='/images/avatar-placeholder.jpg'" alt="صورة المستخدم" class="w-8 h-8 rounded-full ml-2">
+      <span class="ml-4"><%= post.name || post.first_name + ' ' + post.last_name %></span>
+      <span><%= new Date(post.created_at).toLocaleDateString('ar-DZ') %></span>
+    </div>
+    
+    <div class="prose prose-lg max-w-none">
+      <p class="whitespace-pre-line"><%= post.content %></p>
+    </div>
+  </div>
+
+  <!-- Comments Section -->
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">التعليقات (<%= comments ? comments.length : 0 %>)</h2>
+    
+    <% if (user) { %>
+      <!-- Comment Form -->
+      <form action="/community/post/<%= post.id %>/comment" method="POST" class="bg-white shadow-md rounded-lg p-4 mb-6">
+        <div class="mb-4">
+          <label for="content" class="block text-sm font-medium text-gray-700 mb-1">أضف تعليقًا</label>
+          <textarea id="content" name="content" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition duration-300">
+            إرسال التعليق
+          </button>
+        </div>
+      </form>
+    <% } else { %>
+      <div class="bg-gray-100 p-4 rounded-md mb-6 text-center">
+        <p>يرجى <a href="/auth/login" class="text-primary hover:underline">تسجيل الدخول</a> للتعليق على هذا المنشور.</p>
+      </div>
+    <% } %>
+    
+    <!-- Comments List -->
+    <div class="space-y-4">
+      <% if (comments && comments.length > 0) { %>
+        <% comments.forEach(comment => { %>
+          <div class="bg-white shadow-sm rounded-lg p-4">
+            <div class="flex justify-between items-start">
+              <div class="flex items-start">
+                <img src="/images/avatars/<%= comment.user_id %>.jpg" onerror="this.src='/images/avatar-placeholder.jpg'" alt="صورة المستخدم" class="w-8 h-8 rounded-full ml-2">
+                <div>
+                  <div class="flex items-center">
+                    <span class="font-medium text-gray-800 ml-2"><%= comment.name || comment.first_name + ' ' + comment.last_name %></span>
+                    <span class="text-sm text-gray-500"><%= new Date(comment.created_at).toLocaleDateString('ar-DZ') %></span>
+                  </div>
+                  <p class="text-gray-700 mt-1"><%= comment.content %></p>
+                </div>
+              </div>
+              
+              <% if (user && user.id === comment.user_id) { %>
+                <form action="/community/comment/<%= comment.id %>/delete" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا التعليق؟');">
+                  <button type="submit" class="text-red-600 hover:text-red-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="bg-white shadow-sm rounded-lg p-4 text-center">
+          <p class="text-gray-600">لا توجد تعليقات حتى الآن. كن أول من يعلق!</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>

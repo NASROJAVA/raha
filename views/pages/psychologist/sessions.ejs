@@ -1,0 +1,1193 @@
+<%
+// Helper function to check if session date is today
+function isSessionToday(dateStr) {
+    if (!dateStr) return false;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time part to compare dates only
+    
+    const sessionDate = new Date(dateStr);
+    sessionDate.setHours(0, 0, 0, 0);
+    
+    return sessionDate.getTime() === today.getTime();
+}
+%>
+
+<%- contentFor('head') %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .rtl-swal {
+        direction: rtl;
+        text-align: right;
+    }
+</style>
+
+<!-- Immediate error handler script -->
+<script>
+    (function() {
+        try {
+            var urlParams = new URLSearchParams(window.location.search);
+            var error = urlParams.get('error');
+            console.log('Checking for error parameter on page load:', error);
+            
+            if (error) {
+                var decodedError = decodeURIComponent(error);
+                console.log('Found error to display:', decodedError);
+                
+                // Wait for the page to fully load before showing the alert
+                window.addEventListener('load', function() {
+                    console.log('Page loaded, showing error alert');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: decodedError,
+                        confirmButtonText: 'حسناً',
+                        customClass: {
+                            popup: 'rtl-swal'
+                        }
+                    });
+                });
+            }
+        } catch(e) {
+            console.error('Error in immediate error handler:', e);
+            if (error) {
+                alert(decodeURIComponent(error));
+            }
+        }
+    })();
+</script>
+
+<%- contentFor('title') %>
+جلساتي | راحة
+
+<%- contentFor('body') %>
+<!-- Sessions Page Content -->
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex flex-wrap">
+      <!-- Sidebar -->
+      <%- include('../../partials/psychologist-sidebar') %>
+      
+      <!-- Main Content -->
+      <div class="w-full lg:w-3/4 px-4">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-l from-primary to-primary-dark rounded-xl shadow-lg overflow-hidden mb-6">
+          <div class="relative px-6 py-8">
+            <div class="absolute inset-0 opacity-10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                <defs>
+                  <pattern id="pattern" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <rect width="100%" height="100%" fill="none"/>
+                    <circle cx="20" cy="20" r="2" fill="currentColor" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#pattern)" />
+              </svg>
+            </div>
+            <div class="relative flex items-center justify-between">
+              <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white">جلساتي</h1>
+                <p class="text-white text-opacity-90 mt-1">إدارة جلساتك مع المستخدمين</p>
+              </div>
+              <div class="hidden md:flex items-center">
+                <a href="/psychologist/availability" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition duration-300">
+                  <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    تحديد الأوقات المتاحة
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+            <!-- Search Box -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="relative">
+                    <input type="text" id="searchSessions" class="w-full pr-10 pl-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50" placeholder="بحث عن جلسة...">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="flex border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <button id="filter-all" class="filter-tab px-6 py-3 text-primary border-b-2 border-primary font-medium text-sm whitespace-nowrap active" data-filter-status="all" data-filter-date="all">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        جميع الجلسات
+                    </span>
+                </button>
+                <button id="filter-today" class="filter-tab px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap" data-filter-status="all" data-filter-date="today">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        جلسات اليوم
+                    </span>
+                </button>
+                <button id="filter-scheduled" class="filter-tab px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap" data-filter-status="scheduled" data-filter-date="all">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        الجلسات المجدولة
+                    </span>
+                </button>
+                <button id="filter-completed" class="filter-tab px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap" data-filter-status="completed" data-filter-date="all">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        الجلسات المكتملة
+                    </span>
+                </button>
+                <button id="filter-cancelled" class="filter-tab px-6 py-3 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap" data-filter-status="cancelled" data-filter-date="all">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        الجلسات الملغاة
+                    </span>
+                </button>
+            </div>
+            
+            <!-- Advanced Filters - Collapsible -->
+            <div class="p-4 bg-gray-50" id="advancedFilters" style="display: none;">
+                <form action="/psychologist/sessions" method="GET" class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+                    <div class="flex-1">
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">الحالة</label>
+                        <select id="status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="all" <%= filter.status === 'all' ? 'selected' : '' %>>جميع الجلسات</option>
+                            <option value="scheduled" <%= filter.status === 'scheduled' ? 'selected' : '' %>>مجدولة</option>
+                            <option value="completed" <%= filter.status === 'completed' ? 'selected' : '' %>>مكتملة</option>
+                            <option value="cancelled" <%= filter.status === 'cancelled' ? 'selected' : '' %>>ملغاة</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">نطاق التاريخ</label>
+                        <select id="date" name="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="all" <%= filter.date === 'all' ? 'selected' : '' %>>جميع التواريخ</option>
+                            <option value="today" <%= filter.date === 'today' ? 'selected' : '' %>>اليوم</option>
+                            <option value="tomorrow" <%= filter.date === 'tomorrow' ? 'selected' : '' %>>غداً</option>
+                            <option value="week" <%= filter.date === 'week' ? 'selected' : '' %>>هذا الأسبوع</option>
+                            <option value="month" <%= filter.date === 'month' ? 'selected' : '' %>>هذا الشهر</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">نوع الجلسة</label>
+                        <select id="type" name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="all" <%= filter.type === 'all' ? 'selected' : '' %>>جميع الأنواع</option>
+                            <option value="video" <%= filter.type === 'video' ? 'selected' : '' %>>فيديو</option>
+                            <option value="in-person" <%= filter.type === 'in-person' ? 'selected' : '' %>>شخصي</option>
+                            <option value="chat" <%= filter.type === 'chat' ? 'selected' : '' %>>دردشة</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full md:w-auto bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition duration-300">
+                            تطبيق التصفية
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Toggle Advanced Filters Button -->
+            <div class="p-2 text-center border-t border-gray-200">
+                <button id="toggleAdvancedFilters" class="text-sm text-gray-500 hover:text-primary transition duration-300">
+                    <span id="toggleFiltersText">عرض خيارات التصفية المتقدمة</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path id="toggleFiltersIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+    <!-- Sessions list -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">الجلسات <span id="sessionCount" class="bg-gray-100 text-primary px-2 py-1 rounded-full text-sm"><%= sessions.length %></span></h2>
+            <div class="text-sm text-gray-500" id="filteredMessage" style="display: none;">
+                تم العثور على <span id="filteredCount">0</span> جلسة مطابقة
+            </div>
+        </div>
+
+        <% if (sessions && sessions.length > 0) { %>
+            <div class="overflow-x-auto rounded-lg shadow">
+                <table class="min-w-full divide-y divide-gray-200" dir="rtl">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center">
+                                    <span>الموظف</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center">
+                                    <span>الجلسة</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sort-header" data-sort="date">
+                                <div class="flex items-center justify-center">
+                                    <span>التاريخ والوقت</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </th>
+
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer sort-header" data-sort="status">
+                                <div class="flex items-center justify-center">
+                                    <span>الحالة</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center">
+                                    <span>الإجراءات</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessions-table-body" class="bg-white divide-y divide-gray-200">
+                        <% sessions.forEach(session => { 
+                            // Ensure consistent status values that match the filter function expectations
+                            const normalizedStatus = session.status || 'scheduled';
+                        %>
+                            <tr class="hover:bg-gray-50 transition-colors duration-150 ease-in-out session-row" 
+                                data-status="<%= normalizedStatus %>" 
+                                data-is-today="<%= isSessionToday(session.session_date || session.date) ? 'true' : 'false' %>" 
+                                data-type="<%= session.type || '' %>" 
+                                data-client="<%= session.employee ? session.employee.name : '' %>" 
+                                data-date="<%= session.session_date || session.date %>" 
+                                data-time="<%= session.start_time || '' %>">
+                                <% 
+                                // Add today-indicator element for today's sessions
+                                if (isSessionToday(session.session_date || session.date)) { 
+                                    %><span class="hidden today-indicator"></span><% 
+                                } 
+                                %>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                     <div class="flex items-center justify-start">
+                                      <div class="flex-shrink-0 h-10 w-10 relative">
+                                             <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
+                                                 src="<%= session.employee.avatar || '/images/avatar-placeholder.jpg' %>" 
+                                                 onerror="this.src='/images/avatar-placeholder.jpg'" 
+                                                 alt="<%= session.employee.name %>">
+                                             <% if (session.employee.online) { %>
+                                             <span class="absolute bottom-0 left-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                                             <% } %>
+                                         </div>
+                                         <div class="mr-4 text-left">
+                                             <div class="text-sm font-bold text-gray-900">
+                                                 <%= session.employee.name %>
+                                             </div>
+                                             <% if (session.employee.email) { %>
+                                             <div class="text-xs text-gray-500">
+                                                 <%= session.employee.email %>
+                                             </div>
+                                             <% } %>
+                                         </div>
+                                     </div>
+                                 </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900 mb-1"><%= session.title %></div>
+                                    <div class="flex items-center">
+                                        <% if (session.type === 'video') { %>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                </svg>
+                                                فيديو
+                                            </span>
+                                        <% } else if (session.type === 'in-person') { %>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                شخصي
+                                            </span>
+                                        <% } else { %>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                </svg>
+                                                دردشة
+                                            </span>
+                                        <% } %>
+                                        <% if (session.duration) { %>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ml-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <%= session.duration %> دقيقة
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col items-end ">
+                                        <div class="text-sm font-bold text-gray-900 mb-1">
+                                        <% try { %>
+                                            <%= new Date(session.session_date).toLocaleDateString('ar-DZ', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                                        <% } catch (e) { %>
+                                            <%= session.session_date %>
+                                        <% } %>
+                                        </div>
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <%= session.start_time %> - <%= session.end_time %>
+                                        </div>
+                                        <% 
+                                        // Check if the session is today
+                                        const sessionDate = new Date(session.session_date);
+                                        const today = new Date();
+                                        const isToday = sessionDate.getDate() === today.getDate() && 
+                                                      sessionDate.getMonth() === today.getMonth() && 
+                                                      sessionDate.getFullYear() === today.getFullYear();
+                                        if (isToday) { 
+                                        %>
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    اليوم
+                                                </span>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <% if (session.status === 'scheduled') { %>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            مجدولة
+                                        </span>
+                                    <% } else if (session.status === 'completed') { %>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            مكتملة
+                                        </span>
+                                    <% } else if (session.status === 'cancelled') { %>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            ملغاة
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <% if (session.status === 'scheduled' || session.status === 'completed' || session.status === 'in_progress' || session.status === 'active') { %>
+                                        <% if (session.type === 'video') { %>
+                                            <% 
+                                            // Check if session is active directly
+                                            let isActive = false;
+                                            let isToday = false;
+                                            
+                                            try {
+                                                // Get current time
+                                                const now = new Date();
+                                                
+                                                // Parse session date and time
+                                                const sessionDate = new Date(session.session_date || session.date);
+                                                let startHour = 0, startMinute = 0, endHour = 0, endMinute = 0;
+                                                
+                                                // Parse start time
+                                                if (session.start_time && typeof session.start_time === 'string' && session.start_time.includes(':')) {
+                                                    const parts = session.start_time.split(':');
+                                                    startHour = parseInt(parts[0]);
+                                                    startMinute = parseInt(parts[1]);
+                                                } else if (session.start_time && typeof session.start_time === 'number') {
+                                                    startHour = session.start_time;
+                                                    startMinute = 0;
+                                                }
+                                                
+                                                // Parse end time
+                                                if (session.end_time && typeof session.end_time === 'string' && session.end_time.includes(':')) {
+                                                    const parts = session.end_time.split(':');
+                                                    endHour = parseInt(parts[0]);
+                                                    endMinute = parseInt(parts[1]);
+                                                } else if (session.end_time && typeof session.end_time === 'number') {
+                                                    endHour = session.end_time;
+                                                    endMinute = 0;
+                                                }
+                                                
+                                                // Create session start and end times
+                                                const sessionStartDate = new Date(sessionDate);
+                                                sessionStartDate.setHours(startHour, startMinute, 0, 0);
+                                                
+                                                const sessionEndDate = new Date(sessionDate);
+                                                sessionEndDate.setHours(endHour, endMinute, 0, 0);
+                                                
+                                                // Check if current time is between start and end
+                                                isActive = now >= sessionStartDate && now <= sessionEndDate;
+                                                
+                                                // Check if session is today
+                                                isToday = now.getDate() === sessionDate.getDate() && 
+                                                          now.getMonth() === sessionDate.getMonth() && 
+                                                          now.getFullYear() === sessionDate.getFullYear();
+                                            } catch (e) {
+                                                console.error('Error checking active session:', e);
+                                            }
+                                            %>
+                                            
+                                            <% if (session.status === 'active') { %>
+                                                <a href="/sessions/<%= session.id %>/join" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md mr-3 inline-flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                    انضمام للجلسة
+                                                </a>
+                                                <button class="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors duration-200 rounded-md px-3 py-1.5 text-xs font-medium flex items-center cancel-session-btn" data-session-id="<%= session.id %>">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            إلغاء
+                                        </button>
+                                            <% } else if (session.status === 'scheduled') { %>
+                                                <button class="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors duration-200 rounded-md px-3 py-1.5 text-xs font-medium flex items-center cancel-session-btn'" data-session-id="<%= session.id %>">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            إلغاء
+                                        </button>
+                                            <% } else { %>
+                                            <% } %>
+                                        <% } %>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                <!-- Pagination controls -->
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            السابق
+                        </button>
+                        <div class="text-sm text-gray-700">
+                            <span id="current-page-info-mobile">صفحة <span id="current-page-mobile">1</span> من <span id="total-pages-mobile">1</span></span>
+                        </div>
+                        <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            التالي
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                عرض
+                                <span class="font-medium" id="pagination-start">1</span>
+                                إلى
+                                <span class="font-medium" id="pagination-end">10</span>
+                                من أصل
+                                <span class="font-medium" id="pagination-total"><%= sessions.length %></span>
+                                جلسة
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span class="sr-only">السابق</span>
+                                    <!-- Right arrow icon (for RTL) -->
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <!-- Page numbers will be inserted here by JS -->
+                                <div id="pagination-numbers" class="flex"></div>
+                                <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span class="sr-only">التالي</span>
+                                    <!-- Left arrow icon (for RTL) -->
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="p-8 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-700">لم يتم العثور على جلسات</h3>
+                <p class="mt-2 text-gray-500">لا توجد جلسات تطابق المرشحات الحالية. حاول تعديل المرشحات أو التحقق لاحقًا.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Add enhanced filtering, search and sorting script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Store the original sessions order for reference
+    const sessionsTableBody = document.getElementById('sessions-table-body');
+    const originalRows = Array.from(sessionsTableBody.querySelectorAll('tr'));
+    
+    // Track filter, search and pagination state
+    const filterState = {
+      search: '',
+      status: 'all', // all, scheduled, completed, cancelled
+      date: 'all',   // all, today
+      isFiltering: false,
+      currentPage: 1,
+      rowsPerPage: 10
+    };
+    
+    // Store current sort state
+    let sortState = {
+      column: 'date',  // Default sort by date
+      direction: 'desc' // Default direction
+    };
+    
+    // Reference to DOM elements
+    const searchInput = document.getElementById('searchSessions');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const sessionCountElem = document.getElementById('sessionCount');
+    const filteredCountElem = document.getElementById('filteredCount');
+    const filteredMessageElem = document.getElementById('filteredMessage');
+    const toggleAdvancedFiltersBtn = document.getElementById('toggleAdvancedFilters');
+    const advancedFiltersSection = document.getElementById('advancedFilters');
+    
+    // Helper to parse date and time from session row
+    function getSessionDateTime(row) {
+      const dateTextElem = row.querySelector('td:nth-child(3) .text-sm.text-gray-900');
+      const timeTextElem = row.querySelector('td:nth-child(3) .text-sm.text-gray-500');
+      
+      let dateText = '';
+      let timeText = '';
+      
+      if (dateTextElem) dateText = dateTextElem.textContent.trim();
+      if (timeTextElem) timeText = timeTextElem.textContent.trim();
+      
+      // Create a comparable value (unfortunately we can't directly use the date value due to localization)
+      const dateParts = dateText.split(' ');
+      // Extract only numeric values from the date string
+      const dateNumbers = dateParts.filter(part => !isNaN(parseInt(part)));
+      const timeParts = timeText.split(' - ')[0].trim().split(':');
+      
+      // Create a comparable string in format YYYY-MM-DD HH:MM
+      return `${dateNumbers.join('-')} ${timeParts.join(':')}`;
+    }
+    
+    // Helper to get session status priority (for sorting by status)
+    function getStatusPriority(row) {
+      const statusElem = row.querySelector('td:nth-child(6) span');
+      if (!statusElem) return 3; // Default priority
+      
+      const statusText = statusElem.textContent.trim();
+      
+      // Priority order: scheduled (active) > pending > completed > cancelled > no-show
+      if (statusText.includes('مجدولة')) return 0; // Scheduled (highest priority)
+      if (statusText.includes('قيد الانتظار')) return 1; // Pending
+      if (statusText.includes('مكتملة')) return 2; // Completed
+      if (statusText.includes('ملغاة')) return 3; // Cancelled
+      if (statusText.includes('لم يحضر')) return 4; // No-show (lowest priority)
+      
+      return 5; // Unknown status
+    }
+    
+    // Helper to get session active status priority (for sorting by active status)
+    function getActiveStatusPriority(row) {
+      const statusElem = row.querySelector('td:nth-child(5) span');
+      if (!statusElem) return 2; // Default priority
+      
+      const dataStatus = statusElem.getAttribute('data-status');
+      
+      // Priority order: active > upcoming > past
+      if (dataStatus === 'active') return 0; // Active (highest priority)
+      if (dataStatus === 'upcoming') return 1; // Upcoming
+      if (dataStatus === 'past') return 2; // Past (lowest priority)
+      
+      return 3; // Unknown status
+    }
+    
+    // Toggle advanced filters section
+    if (toggleAdvancedFiltersBtn) {
+      toggleAdvancedFiltersBtn.addEventListener('click', function() {
+        const isHidden = advancedFiltersSection.style.display === 'none';
+        advancedFiltersSection.style.display = isHidden ? 'block' : 'none';
+        document.getElementById('toggleFiltersText').textContent = isHidden ? 
+          '\u0625\u062e\u0641\u0627\u0621 \u062e\u064a\u0627\u0631\u0627\u062a \u0627\u0644\u062a\u0635\u0641\u064a\u0629 \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629' : 
+          '\u0639\u0631\u0636 \u062e\u064a\u0627\u0631\u0627\u062a \u0627\u0644\u062a\u0635\u0641\u064a\u0629 \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629';
+        
+        // Rotate the icon
+        const iconPath = document.getElementById('toggleFiltersIcon');
+        if (iconPath) {
+          iconPath.setAttribute('d', isHidden ? 
+            'M19 15l-7-7-7 7' : 
+            'M19 9l-7 7-7-7');
+        }
+      });
+    }
+    
+    // Add event listeners for pagination buttons
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    const prevButtonMobile = document.getElementById('prev-page-mobile');
+    const nextButtonMobile = document.getElementById('next-page-mobile');
+    
+    if (prevButton) {
+      prevButton.addEventListener('click', function() {
+        if (filterState.currentPage > 1) {
+          filterState.currentPage--;
+          applyFilters();
+        }
+      });
+    }
+    
+    if (nextButton) {
+      nextButton.addEventListener('click', function() {
+        const totalVisibleRows = Array.from(sessionsTableBody.querySelectorAll('tr')).filter(row => !row.hasAttribute('hidden')).length;
+        const totalPages = Math.max(1, Math.ceil(totalVisibleRows / filterState.rowsPerPage));
+        
+        if (filterState.currentPage < totalPages) {
+          filterState.currentPage++;
+          applyFilters();
+        }
+      });
+    }
+    
+    if (prevButtonMobile) {
+      prevButtonMobile.addEventListener('click', function() {
+        if (filterState.currentPage > 1) {
+          filterState.currentPage--;
+          applyFilters();
+        }
+      });
+    }
+    
+    if (nextButtonMobile) {
+      nextButtonMobile.addEventListener('click', function() {
+        const totalVisibleRows = Array.from(sessionsTableBody.querySelectorAll('tr')).filter(row => !row.hasAttribute('hidden')).length;
+        const totalPages = Math.max(1, Math.ceil(totalVisibleRows / filterState.rowsPerPage));
+        
+        if (filterState.currentPage < totalPages) {
+          filterState.currentPage++;
+          applyFilters();
+        }
+      });
+    }
+
+    // Add event listener for real-time search
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        filterState.search = this.value.toLowerCase();
+        filterState.isFiltering = filterState.search !== '';
+        applyFilters();
+      });
+    }
+
+    // Add event listeners to filter tabs
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Log which tab was clicked for debugging
+        console.log('Filter tab clicked:', this.id);
+        
+        // Remove active class from all tabs
+        filterTabs.forEach(t => {
+          t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          t.classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+        
+        // Add active class to clicked tab
+        this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+        this.classList.remove('text-gray-500', 'hover:text-gray-700');
+        
+        // Reset to page 1 when filter changes
+        filterState.currentPage = 1;
+        
+        // Update filter state based on the clicked tab's data attributes
+        const filterStatus = this.getAttribute('data-filter-status') || 'all';
+        const filterDate = this.getAttribute('data-filter-date') || 'all';
+        
+        console.log('Tab clicked with attributes - status:', filterStatus, 'date:', filterDate);
+        
+        // Set the filter state from the attributes
+        filterState.status = filterStatus;
+        filterState.date = filterDate;
+        
+        console.log('Filter state updated:', JSON.stringify(filterState));
+        
+        // Count rows that should match this filter for debugging
+        if (sessionsTableBody) {
+          const rows = Array.from(sessionsTableBody.querySelectorAll('tr'));
+          const matchingStatus = rows.filter(r => {
+            const status = r.getAttribute('data-status');
+            return filterState.status === 'all' || status === filterState.status;
+          }).length;
+          console.log(`Rows with matching status (${filterState.status}):`, matchingStatus);
+          
+          const matchingDate = rows.filter(r => {
+            const isToday = r.getAttribute('data-is-today') === 'true';
+            return filterState.date === 'all' || (filterState.date === 'today' && isToday);
+          }).length;
+          console.log(`Rows with matching date (${filterState.date}):`, matchingDate);
+        }
+        
+        filterState.isFiltering = true;
+        applyFilters();
+        
+        // Show feedback with subtle animation
+        showToast('\u062a\u0645 \u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u062a\u0635\u0641\u064a\u0629');
+      });
+    });
+
+    // Function to filter and paginate sessions based on current criteria
+    function applyFilters() {
+      console.log('Applying filters with state:', JSON.stringify(filterState));
+      
+      if (!sessionsTableBody) {
+        console.error('Sessions table body not found');
+        return;
+      }
+      
+      const rows = Array.from(sessionsTableBody.querySelectorAll('tr.session-row'));
+      console.log('Total session rows found:', rows.length);
+      
+      let visibleRows = [];
+      
+      // First pass: Determine which rows match the filter criteria
+      rows.forEach((row, index) => {
+        // Extract data from row attributes
+        const sessionText = row.textContent.toLowerCase();
+        const status = row.getAttribute('data-status');
+        const isToday = row.getAttribute('data-is-today') === 'true';
+        
+        // For debugging the first few rows
+        if (index < 3) {
+          console.log(`Row ${index} - status: ${status}, isToday: ${isToday}`);
+        }
+        
+        // Check if row matches all criteria
+        const matchesSearch = filterState.search === '' || 
+                             sessionText.includes(filterState.search);
+        
+        // Status matching: compare the status with what's in the filter state
+        const matchesStatus = filterState.status === 'all' || 
+                            (status && status === filterState.status);
+        
+        // Date matching: check if we're filtering for today and if this is a today session
+        const matchesDate = filterState.date === 'all' || 
+                          (filterState.date === 'today' && isToday === true);
+        
+        // For debugging the first few rows
+        if (index < 3) {
+          console.log(`Row ${index} matching - search: ${matchesSearch}, status: ${matchesStatus}, date: ${matchesDate}`);
+        }
+        
+        // Add to visible rows array if matches all criteria
+        if (matchesSearch && matchesStatus && matchesDate) {
+          visibleRows.push(row);
+          // Highlight search matches if needed
+          if (filterState.search) {
+            highlightText(row, filterState.search);
+          }
+        }
+      });
+      
+      // Calculate pagination information
+      const totalVisibleRows = visibleRows.length;
+      const totalPages = Math.max(1, Math.ceil(totalVisibleRows / filterState.rowsPerPage));
+      
+      // Adjust current page if necessary (e.g., if filters reduce the available pages)
+      if (filterState.currentPage > totalPages) {
+        filterState.currentPage = totalPages;
+      }
+      
+      // Calculate start and end indices for current page
+      const startIndex = (filterState.currentPage - 1) * filterState.rowsPerPage;
+      const endIndex = Math.min(startIndex + filterState.rowsPerPage, totalVisibleRows);
+      
+      // Hide all rows first
+      rows.forEach(row => {
+        row.style.display = 'none';
+      });
+      
+      // Show only rows for current page
+      for (let i = startIndex; i < endIndex; i++) {
+        if (visibleRows[i]) {
+          visibleRows[i].style.display = '';
+        }
+      }
+      
+      // Update pagination UI
+      updatePaginationUI(totalVisibleRows, totalPages);
+      
+      // Update the counters
+      if (sessionCountElem) {
+        sessionCountElem.textContent = originalRows.length;
+      }
+      
+      // Show filtered message if filtering is active
+      if (filteredMessageElem) {
+        if (filterState.isFiltering) {
+          filteredCountElem.textContent = totalVisibleRows;
+          filteredMessageElem.style.display = 'block';
+        } else {
+          filteredMessageElem.style.display = 'none';
+        }
+      }
+    }
+    
+    // Function to update pagination UI elements
+    function updatePaginationUI(totalRows, totalPages) {
+      // Update pagination text
+      const paginationStart = document.getElementById('pagination-start');
+      const paginationEnd = document.getElementById('pagination-end');
+      const paginationTotal = document.getElementById('pagination-total');
+      
+      if (paginationStart && paginationEnd && paginationTotal) {
+        const startItem = totalRows === 0 ? 0 : (filterState.currentPage - 1) * filterState.rowsPerPage + 1;
+        const endItem = Math.min(startItem + filterState.rowsPerPage - 1, totalRows);
+        
+        paginationStart.textContent = startItem;
+        paginationEnd.textContent = endItem;
+        paginationTotal.textContent = totalRows;
+      }
+      
+      // Update mobile pagination info
+      const currentPageMobile = document.getElementById('current-page-mobile');
+      const totalPagesMobile = document.getElementById('total-pages-mobile');
+      
+      if (currentPageMobile && totalPagesMobile) {
+        currentPageMobile.textContent = filterState.currentPage;
+        totalPagesMobile.textContent = totalPages;
+      }
+      
+      // Update pagination numbers
+      const paginationNumbers = document.getElementById('pagination-numbers');
+      if (paginationNumbers) {
+        paginationNumbers.innerHTML = '';
+        
+        // Determine which page numbers to show (always show current, first, last and +/- 1 from current)
+        const pagesToShow = new Set();
+        pagesToShow.add(1); // First page
+        pagesToShow.add(totalPages); // Last page
+        pagesToShow.add(filterState.currentPage); // Current page
+        
+        // Pages adjacent to current
+        if (filterState.currentPage > 1) pagesToShow.add(filterState.currentPage - 1);
+        if (filterState.currentPage < totalPages) pagesToShow.add(filterState.currentPage + 1);
+        
+        // Convert to array and sort
+        const pageArray = Array.from(pagesToShow).sort((a, b) => a - b);
+        
+        // Create page buttons with ellipsis where needed
+        let prevPage = 0;
+        pageArray.forEach(pageNum => {
+          // Add ellipsis if needed
+          if (pageNum - prevPage > 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700';
+            ellipsis.textContent = '...';
+            paginationNumbers.appendChild(ellipsis);
+          }
+          
+          // Create page button
+          const pageButton = document.createElement('button');
+          pageButton.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium ' + 
+                                (pageNum === filterState.currentPage ? 'text-primary bg-primary-50 border-primary z-10' : 'text-gray-700 hover:bg-gray-50');
+          pageButton.textContent = pageNum;
+          pageButton.setAttribute('data-page', pageNum);
+          pageButton.addEventListener('click', () => {
+            filterState.currentPage = pageNum;
+            applyFilters();
+          });
+          
+          paginationNumbers.appendChild(pageButton);
+          prevPage = pageNum;
+        });
+      }
+      
+      // Update prev/next buttons
+      const prevButton = document.getElementById('prev-page');
+      const nextButton = document.getElementById('next-page');
+      const prevButtonMobile = document.getElementById('prev-page-mobile');
+      const nextButtonMobile = document.getElementById('next-page-mobile');
+      
+      if (prevButton && nextButton) {
+        prevButton.disabled = filterState.currentPage <= 1;
+        nextButton.disabled = filterState.currentPage >= totalPages;
+      }
+      
+      if (prevButtonMobile && nextButtonMobile) {
+        prevButtonMobile.disabled = filterState.currentPage <= 1;
+        nextButtonMobile.disabled = filterState.currentPage >= totalPages;
+      }
+    }
+
+    // Helper function to highlight search matches
+    function highlightText(element, query) {
+      if (!query || query === '') return;
+      
+      const cells = element.querySelectorAll('td');
+      cells.forEach(cell => {
+        if (!cell.classList.contains('actions-cell')) {
+          const originalText = cell.textContent;
+          const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+          
+          if (regex.test(originalText)) {
+            cell.innerHTML = originalText.replace(regex, '<mark class="bg-yellow-100 px-1 rounded">$1</mark>');
+          }
+        }
+      });
+    }
+
+    // Helper function to escape special chars in regex
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Toast notification function
+    function showToast(message) {
+      // Check if SweetAlert2 is available
+      if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        });
+        
+        Toast.fire({
+          icon: 'success',
+          title: message
+        });
+      } else {
+        // Fallback to custom toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-primary text-white py-2 px-4 rounded-lg shadow-md transition-all transform translate-y-0 opacity-100 z-50';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-20px)';
+          setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+      }
+    }
+
+    // Sort function
+    function sortSessions(column, direction) {
+      if (!sessionsTableBody) return;
+      
+      const rows = Array.from(sessionsTableBody.querySelectorAll('tr'));
+      
+      // Sort rows based on column and direction
+      const sortedRows = rows.sort((a, b) => {
+        let valueA, valueB;
+        
+        if (column === 'date') {
+          valueA = getSessionDateTime(a);
+          valueB = getSessionDateTime(b);
+        } else if (column === 'status') {
+          valueA = getStatusPriority(a);
+          valueB = getStatusPriority(b);
+        } else if (column === 'activeStatus') {
+          valueA = getActiveStatusPriority(a);
+          valueB = getActiveStatusPriority(b);
+        }
+        
+        // Compare values based on direction
+        if (direction === 'asc') {
+          return valueA > valueB ? 1 : -1;
+        } else {
+          return valueA < valueB ? 1 : -1;
+        }
+      });
+      
+      // Clear and re-append rows in sorted order
+      while (sessionsTableBody.firstChild) {
+        sessionsTableBody.removeChild(sessionsTableBody.firstChild);
+      }
+      
+      sortedRows.forEach(row => {
+        sessionsTableBody.appendChild(row);
+      });
+      
+      // Update sort icons
+      document.querySelectorAll('.sort-header').forEach(header => {
+        const icon = header.querySelector('.sort-icon');
+        const headerColumn = header.getAttribute('data-sort');
+        
+        if (headerColumn === column) {
+          icon.classList.add('text-primary');
+          if (direction === 'asc') {
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />';
+          } else {
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />';
+          }
+        } else {
+          icon.classList.remove('text-primary');
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />';
+        }
+      });
+    }
+    
+    // Add click event listeners to sortable headers
+    document.querySelectorAll('.sort-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const column = header.getAttribute('data-sort');
+        
+        // Toggle direction if clicking the same column
+        if (sortState.column === column) {
+          sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortState.column = column;
+          sortState.direction = 'asc'; // Default to ascending when changing columns
+        }
+        
+        // Perform sort
+        sortSessions(sortState.column, sortState.direction);
+      });
+    });
+    
+    // Initial sort by date (descending)
+    sortSessions('date', 'desc');
+    
+    // Initialize pagination and filtering on page load
+    applyFilters();
+  });
+</script>
+
+<!-- Cancel Session Modal -->
+<div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">إلغاء الجلسة</h3>
+        <p class="text-gray-600 mb-6">هل أنت متأكد من رغبتك في إلغاء هذه الجلسة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+        
+        <form id="cancelForm" action="" method="POST">
+            <div class="mb-4">
+                <label for="cancelReason" class="block text-sm font-medium text-gray-700 mb-1">سبب الإلغاء (اختياري)</label>
+                <textarea id="cancelReason" name="reason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="cancelModalClose" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-300">
+                    الرجوع
+                </button>
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300">
+                    تأكيد الإلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Function to show error alert
+    function showErrorAlert(errorMsg) {
+        console.log('Showing error alert with message:', errorMsg);
+        try {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: errorMsg,
+                    confirmButtonText: 'حسناً',
+                    customClass: {
+                        popup: 'rtl-swal'
+                    }
+                });
+                console.log('SweetAlert2 alert displayed');
+            } else {
+                console.error('SweetAlert2 is not defined');
+                alert(errorMsg); // Fallback to standard alert
+            }
+        } catch (e) {
+            console.error('Error showing SweetAlert:', e);
+            alert(errorMsg); // Fallback to standard alert
+        }
+    }
+
+    // Handle URL error parameter separately from DOM-related code
+    window.onload = function() {
+        console.log('Window loaded');
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            console.log('URL error parameter (window.onload):', error);
+
+            if (error) {
+                const decodedError = decodeURIComponent(error);
+                console.log('Decoded error (window.onload):', decodedError);
+                showErrorAlert(decodedError);
+            }
+        } catch (e) {
+            console.error('Error in window.onload handler:', e);
+        }
+    };
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+        
+        // Check for error parameters in the URL
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            console.log('URL error parameter:', error);
+
+            if (error) {
+                const decodedError = decodeURIComponent(error);
+                console.log('Decoded error:', decodedError);
+            }
+        } catch (e) {
+            console.error('Error processing URL parameters:', e);
+        }
+
+        // Cancel session modal functionality
+        const cancelBtns = document.querySelectorAll('.cancel-session-btn');
+        const cancelModal = document.getElementById('cancelModal');
+        const cancelModalClose = document.getElementById('cancelModalClose');
+        const cancelForm = document.getElementById('cancelForm');
+        
+        cancelBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-session-id');
+                cancelForm.action = `/sessions/${sessionId}/cancel`;
+                cancelModal.classList.remove('hidden');
+            });
+        });
+        
+        cancelModalClose.addEventListener('click', function() {
+            cancelModal.classList.add('hidden');
+        });
+    });
+</script>

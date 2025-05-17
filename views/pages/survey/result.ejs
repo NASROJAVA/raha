@@ -1,0 +1,122 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-800 mb-2">نتيجة الاستبيان</h1>
+  <p class="text-gray-600">شكراً لإكمال استبيان الضغط اليومي. فيما يلي نتائجك.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <!-- Stress Level Card -->
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold text-gray-800">مستوى الضغط الحالي</h2>
+    </div>
+    
+    <div class="card-body text-center">
+      <% 
+      let stressClass = 'stress-level-low';
+      let stressText = 'منخفض';
+      
+      if (survey.stress_level > 70) {
+        stressClass = 'stress-level-high';
+        stressText = 'مرتفع';
+      } else if (survey.stress_level > 40) {
+        stressClass = 'stress-level-medium';
+        stressText = 'متوسط';
+      }
+      %>
+      
+      <div class="relative h-48 w-48 mx-auto mb-4">
+        <svg viewBox="0 0 36 36" class="h-48 w-48">
+          <path class="stroke-current text-gray-200" fill="none" stroke-width="3" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          <path class="stroke-current <%= stressClass %>" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="<%= survey.stress_level %>, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          <text x="18" y="20.5" class="text-5xl font-bold <%= stressClass %>" text-anchor="middle"><%= survey.stress_level %>%</text>
+        </svg>
+      </div>
+      
+      <p class="text-xl font-semibold <%= stressClass %>">مستوى الضغط <%= stressText %></p>
+      <p class="text-gray-600 mt-2">تم إكمال الاستبيان في <%= new Date(survey.completed_at).toLocaleString('ar-SA') %></p>
+    </div>
+  </div>
+  
+  <!-- Recommendations Card -->
+  <div class="col-span-1 md:col-span-2 card shadow-lg">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold text-gray-800">التوصيات</h2>
+    </div>
+    
+    <div class="card-body">
+      <% if (recommendationType === 'high') { %>
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2 stress-level-high">مستوى الضغط لديك مرتفع</h3>
+          <p class="text-gray-600 mb-4">يبدو أنك تعاني من مستوى ضغط مرتفع. نوصيك باتخاذ إجراءات لتقليل الضغط والتوتر.</p>
+          
+          <ul class="list-disc list-inside space-y-2">
+            <li>تحدث مع معالج نفسي من خلال منصتنا</li>
+            <li>خذ فترات راحة منتظمة خلال يوم العمل</li>
+            <li>مارس تمارين الاسترخاء والتنفس العميق</li>
+            <li>قلل من استهلاك الكافيين والسكر</li>
+            <li>حاول الحصول على 7-8 ساعات من النوم كل ليلة</li>
+            <li>احرص على ممارسة الرياضة بانتظام</li>
+          </ul>
+          
+          <div class="mt-6">
+            <a href="/sessions/book" class="btn-primary py-2 px-4 rounded-md">حجز جلسة مع معالج نفسي</a>
+          </div>
+        </div>
+      <% } else if (recommendationType === 'medium') { %>
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2 stress-level-medium">مستوى الضغط لديك متوسط</h3>
+          <p class="text-gray-600 mb-4">يبدو أنك تعاني من مستوى ضغط متوسط. نوصيك ببعض الإجراءات للحفاظ على توازنك.</p>
+          
+          <ul class="list-disc list-inside space-y-2">
+            <li>خذ فترات راحة قصيرة خلال يوم العمل</li>
+            <li>مارس تمارين الاسترخاء والتنفس العميق</li>
+            <li>حاول الحصول على قسط كافٍ من النوم</li>
+            <li>تأكد من ممارسة الرياضة بشكل منتظم</li>
+          </ul>
+          
+          <div class="mt-6">
+            <a href="/support" class="btn-primary py-2 px-4 rounded-md">تحدث مع معالج نفسي</a>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2 stress-level-low">مستوى الضغط لديك منخفض</h3>
+          <p class="text-gray-600 mb-4">تهانينا! يبدو أنك تتمتع بمستوى ضغط منخفض. استمر في الحفاظ على هذا المستوى الجيد.</p>
+          
+          <ul class="list-disc list-inside space-y-2">
+            <li>استمر في الحفاظ على التوازن بين العمل والحياة الشخصية</li>
+            <li>مارس الرياضة بانتظام</li>
+            <li>حافظ على عادات النوم الصحية</li>
+            <li>شارك نصائحك مع زملائك في العمل</li>
+          </ul>
+          
+          <div class="mt-6">
+            <a href="/community" class="btn-primary py-2 px-4 rounded-md">شارك تجربتك مع المجتمع</a>
+          </div>
+        </div>
+      <% } %>
+      
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-2">مواد تدريبية موصى بها</h3>
+        <p class="text-gray-600 mb-4">استكشف هذه المواد التدريبية لمساعدتك على إدارة الضغط وتحسين صحتك النفسية:</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <a href="/training" class="card hover-card p-4">
+            <h4 class="font-semibold text-primary">تقنيات الاسترخاء والتنفس العميق</h4>
+            <p class="text-gray-600 text-sm">تعلم تقنيات الاسترخاء والتنفس العميق لتقليل التوتر والقلق.</p>
+          </a>
+          
+          <a href="/training" class="card hover-card p-4">
+            <h4 class="font-semibold text-primary">إدارة الوقت والإنتاجية</h4>
+            <p class="text-gray-600 text-sm">استراتيجيات لتحسين إدارة الوقت وزيادة الإنتاجية وتقليل الضغط.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flex justify-between">
+  <a href="/survey" class="btn-outline py-2 px-4 rounded-md">إجراء استبيان جديد</a>
+  <a href="/survey/history" class="btn-outline py-2 px-4 rounded-md">عرض سجل الاستبيانات</a>
+</div>

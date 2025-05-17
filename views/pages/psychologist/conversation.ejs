@@ -1,0 +1,647 @@
+<%- contentFor('title') %>
+المحادثة | راحة
+
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-wrap">
+    <!-- Sidebar -->
+    <%- include('../../partials/psychologist-sidebar') %>
+    
+    <!-- Main Content -->
+    <div class="w-full lg:w-3/4 px-4">
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-bold text-gray-800">
+            المحادثة مع <%= employee.first_name %> <%= employee.last_name %>
+            <span id="online-status" class="mr-2 inline-flex items-center text-xs font-medium">
+              <span class="h-2 w-2 rounded-full bg-gray-400 ml-1 online-indicator"></span>
+              <span class="status-text">غير متصل</span>
+            </span>
+          </h1>
+          <a href="/psychologist/messages" class="btn-secondary">العودة إلى الرسائل</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Conversations List -->
+          <div class="md:col-span-1 border-l border-gray-200">
+            <div class="mb-4">
+              <div class="relative">
+                <input type="text" id="searchConversations" class="form-input w-full pl-10" placeholder="بحث عن محادثة...">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="overflow-y-auto max-h-96 custom-scrollbar">
+              <div id="conversationsList">
+                <% if (conversations && conversations.length > 0) { %>
+                  <% conversations.forEach(conversation => { %>
+                    <a href="/psychologist/messages/<%= conversation.userId %>" class="conversation-item block p-3 border-b border-gray-200 hover:bg-gray-50 transition duration-150 ease-in-out <%= conversation.userId == activeUserId ? 'bg-blue-50' : '' %>">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                          <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                            <%= conversation.userName.charAt(0) %>
+                          </div>
+                        </div>
+                        <div class="ml-3 flex-1">
+                          <div class="flex items-center justify-between">
+                            <p class="text-sm font-medium text-gray-900"><%= conversation.userName %></p>
+                            <p class="text-xs text-gray-500"><%= conversation.lastMessageTime %></p>
+                          </div>
+                          <p class="text-sm text-gray-500 truncate"><%= conversation.lastMessage %></p>
+                        </div>
+                        <% if (conversation.unreadCount > 0) { %>
+                          <div class="flex-shrink-0 ml-2">
+                            <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full"><%= conversation.unreadCount %></span>
+                          </div>
+                        <% } %>
+                      </div>
+                    </a>
+                  <% }); %>
+                <% } else { %>
+                  <div class="text-center py-8">
+                    <p class="text-gray-500">لا توجد محادثات</p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Conversation Area -->
+          <div class="md:col-span-2">
+            <div class="h-full flex flex-col">
+              <!-- Conversation Header -->
+              <div class="border-b border-gray-200 pb-4 mb-4">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                      <%= employee.first_name.charAt(0) %>
+                    </div>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-lg font-medium text-gray-900"><%= employee.first_name %> <%= employee.last_name %></p>
+                    <p class="text-sm text-gray-500"><%= employee.email %></p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Messages -->
+              <div class="flex-1 overflow-y-auto mb-4 max-h-96 custom-scrollbar" id="messagesContainer">
+                <% if (messages && messages.length > 0) { %>
+                  <% messages.forEach(message => { 
+                    const isSent = message.sender_id == user.id;
+                  %>
+                    <div class="flex <%= isSent ? 'justify-end' : 'justify-start' %> mb-4">
+                      <div class="message <%= isSent ? 'message-sent' : 'message-received' %>">
+                        <div class="message-content">
+                          <%= message.message %>
+                        </div>
+                        <div class="text-xs <%= isSent ? 'text-right' : 'text-left' %> mt-1 text-gray-500">
+                          <%= new Date(message.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) %>
+                          <% if (isSent) { %>
+                            <span class="mr-1 message-status">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline <%= message.is_read ? 'text-blue-600' : 'text-gray-400' %>" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                              </svg>
+                            </span>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <div class="text-center py-8">
+                    <p class="text-gray-500">لا توجد رسائل. ابدأ المحادثة الآن!</p>
+                  </div>
+                <% } %>
+              </div>
+              
+              <!-- Typing Indicator -->
+              <div id="typingIndicator" class="typing-indicator hidden bg-gray-100 rounded-full py-2 px-4 max-w-xs mb-4 flex items-center">
+                <div class="flex space-x-1 ml-2">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+                <span class="text-sm text-gray-600 mr-1"><%= employee.first_name %> يكتب...</span>
+              </div>
+              
+              <!-- Message Input -->
+              <div class="mt-auto">
+                <form id="messageForm" class="relative">
+                  <input type="hidden" id="receiver-id" value="<%= activeUserId %>">
+                  <input type="hidden" id="conversation-id" value="<%= activeUserId %>">
+                  <div class="relative">
+                    <textarea id="messageInput" rows="3" class="form-textarea w-full" placeholder="اكتب رسالتك هنا..."></textarea>
+                  </div>
+                  <div class="mt-2 text-left">
+                    <button type="submit" class="btn-primary mr-2">إرسال</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Socket.io client library -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Include chat script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const messagesContainer = document.getElementById('messagesContainer');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const receiverId = document.getElementById('receiver-id').value;
+    const conversationId = document.getElementById('conversation-id').value;
+    const userId = document.body.getAttribute('data-user-id');
+    const onlineStatus = document.getElementById('online-status');
+    const onlineIndicator = onlineStatus.querySelector('.online-indicator');
+    const statusText = onlineStatus.querySelector('.status-text');
+    const searchInput = document.getElementById('searchConversations');
+    const conversationsList = document.getElementById('conversationsList');
+    
+    // Sound for new messages
+    const notificationSound = new Audio('/sounds/notification.mp3');
+    
+    // Flag to track if page is visible
+    let isPageVisible = true;
+    let unreadMessagesCount = 0;
+    
+    // Track if user is currently in this window/tab
+    document.addEventListener('visibilitychange', function() {
+      isPageVisible = document.visibilityState === 'visible';
+      
+      // If page becomes visible again and there are unread messages
+      if (isPageVisible && unreadMessagesCount > 0) {
+        // Reset unread counter
+        unreadMessagesCount = 0;
+        // Reset page title
+        document.title = 'المحادثة | راحة';
+      }
+    });
+    
+    // Scroll to bottom of messages container
+    function scrollToBottom() {
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }
+    
+    scrollToBottom();
+    
+    // Initialize Socket.io
+    const socket = io();
+    
+    // Update online status UI
+    function updateOnlineStatusUI(isOnline) {
+      if (isOnline) {
+        onlineIndicator.classList.remove('bg-gray-400');
+        onlineIndicator.classList.add('bg-green-500');
+        statusText.textContent = 'متصل الآن';
+      } else {
+        onlineIndicator.classList.remove('bg-green-500');
+        onlineIndicator.classList.add('bg-gray-400');
+        statusText.textContent = 'غير متصل';
+      }
+    }
+    
+    // Add a message to the UI
+    function addMessageToUI(message, isSent, time, isRead = false) {
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = `flex ${isSent ? 'justify-end' : 'justify-start'} mb-4`;
+      
+      const messageElement = document.createElement('div');
+      messageElement.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
+      
+      const messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
+      messageContent.textContent = message;
+      
+      const messageInfo = document.createElement('div');
+      messageInfo.className = `text-xs ${isSent ? 'text-right' : 'text-left'} mt-1 text-gray-500`;
+      messageInfo.textContent = time;
+      
+      if (isSent) {
+        const messageStatus = document.createElement('span');
+        messageStatus.className = 'mr-1 message-status';
+        messageStatus.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline ${isRead ? 'text-blue-600' : 'text-gray-400'}" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        `;
+        messageInfo.appendChild(messageStatus);
+      }
+      
+      messageElement.appendChild(messageContent);
+      messageElement.appendChild(messageInfo);
+      messageWrapper.appendChild(messageElement);
+      messagesContainer.appendChild(messageWrapper);
+      
+      // Scroll to bottom
+      scrollToBottom();
+    }
+    
+    // Play notification sound
+    function playNotificationSound() {
+      try {
+        notificationSound.play();
+      } catch (error) {
+        console.error('Error playing notification sound:', error);
+      }
+    }
+    
+    // Show notification using SweetAlert2
+    function showNotification(message, senderName) {
+      // Only show notification if user is not on the page or outside the specific conversation
+      const currentPath = window.location.pathname;
+      const onSpecificConversation = currentPath === `/psychologist/messages/${receiverId}`;
+      
+      if (!isPageVisible || !onSpecificConversation) {
+        // Update page title to show unread messages
+        unreadMessagesCount++;
+        document.title = `(${unreadMessagesCount}) رسالة جديدة | راحة`;
+        
+        // Show notification
+        Swal.fire({
+          title: 'رسالة جديدة',
+          text: `${senderName}: ${message}`,
+          icon: 'info',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+            toast.addEventListener('click', () => {
+              window.focus();
+              // Navigate to the conversation when clicked
+              window.location.href = `/psychologist/messages/${message.sender_id}`;
+              Swal.close();
+            });
+          }
+        });
+      }
+    }
+    
+    // Socket connection events
+    socket.on('connect', function() {
+      console.log('Socket connected: ' + socket.id);
+      
+      // Register with the socket server
+      socket.emit('register-user', {
+        userId: userId,
+        userRole: 'psychologist',
+        currentPage: 'conversation',
+        conversationId: conversationId
+      });
+      
+      // Explicitly join the chat room
+      socket.emit('join-chat', {
+        senderId: userId,
+        receiverId: receiverId
+      });
+      console.log('Joining chat room for users:', userId, receiverId);
+      
+      // Mark all messages from this employee as read
+      socket.emit('mark-messages-read', {
+        senderId: receiverId
+      });
+    });
+    
+    socket.on('disconnect', function() {
+      console.log('Socket disconnected');
+      updateOnlineStatusUI(false);
+    });
+    
+    socket.on('connect_error', function(error) {
+      console.log('Connection error: ' + error);
+    });
+    
+    // Socket event handlers for messaging
+    socket.on('user-registered', function(data) {
+      console.log('Registered with socket server', data);
+    });
+    
+    // Handle employee online status change
+    socket.on('user-status-change', function(data) {
+      if (data.userId == receiverId) {
+        updateOnlineStatusUI(data.isOnline);
+      }
+    });
+    
+    // Handle incoming messages
+    socket.on('new-message', function(message) {
+      console.log('New message received:', message);
+      
+      // If message is for current conversation
+      if (message.sender_id == receiverId || 
+          (message.sender_id == userId && message.receiver_id == receiverId)) {
+        
+        // Add message to UI if from the other person
+        if (message.sender_id == receiverId) {
+          addMessageToUI(message.message, false, message.time);
+          
+          // Play notification sound
+          playNotificationSound();
+          
+          // Show notification if needed
+          if (message.needsNotification) {
+            showNotification(message.message, message.sender_name);
+          }
+          
+          // Hide typing indicator
+          typingIndicator.classList.add('hidden');
+          
+          // Mark message as read
+          socket.emit('mark-messages-read', {
+            senderId: receiverId
+          });
+        }
+        
+        // Update conversation list item for this conversation
+        updateConversationList(message, receiverId);
+      } else {
+        // Message from a different employee
+        updateConversationList(message, message.sender_id);
+        
+        if (message.needsNotification) {
+          // Play notification sound
+          playNotificationSound();
+          
+          // Show notification
+          showNotification(message.message, message.sender_name);
+        }
+      }
+    });
+    
+    // Update conversation list with new message
+    function updateConversationList(message, userId) {
+      const conversationItem = document.querySelector(`.conversation-item[href="/psychologist/messages/${userId}"]`);
+      
+      if (conversationItem) {
+        // Update last message and time
+        const lastMessageEl = conversationItem.querySelector('.text-sm.text-gray-500');
+        const timeEl = conversationItem.querySelector('.text-xs.text-gray-500');
+        
+        if (lastMessageEl) {
+          lastMessageEl.textContent = message.message;
+        }
+        
+        if (timeEl) {
+          timeEl.textContent = message.time || new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // If message is not from current user and not in current conversation, increment unread badge
+        if (message.sender_id != userId && message.sender_id != receiverId) {
+          let badgeEl = conversationItem.querySelector('.bg-red-500');
+          
+          if (badgeEl) {
+            // Increment existing badge
+            const count = parseInt(badgeEl.textContent) + 1;
+            badgeEl.textContent = count;
+          } else {
+            // Create new badge
+            const badgeContainer = document.createElement('div');
+            badgeContainer.className = 'flex-shrink-0 ml-2';
+            
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full';
+            badge.textContent = '1';
+            
+            badgeContainer.appendChild(badge);
+            const rightSide = conversationItem.querySelector('.flex-1').nextElementSibling;
+            
+            if (rightSide) {
+              conversationItem.querySelector('.flex').insertBefore(badgeContainer, rightSide);
+            } else {
+              conversationItem.querySelector('.flex').appendChild(badgeContainer);
+            }
+          }
+        }
+        
+        // Move this conversation to the top
+        const parent = conversationItem.parentNode;
+        parent.insertBefore(conversationItem, parent.firstChild);
+      }
+    }
+    
+    // Handle message sent confirmation
+    socket.on('message-sent', function(message) {
+      console.log('Message sent confirmation received:', message);
+    });
+    
+    // Handle read receipts
+    socket.on('messages-read', function(data) {
+      console.log('Messages read by:', data.by);
+      
+      // Update read status for all sent messages
+      const messageStatuses = document.querySelectorAll('.message-status svg');
+      messageStatuses.forEach(function(statusIcon) {
+        statusIcon.classList.remove('text-gray-400');
+        statusIcon.classList.add('text-blue-600');
+      });
+    });
+    
+    // Handle typing indicators
+    socket.on('user-typing', function(data) {
+      if (data.userId == receiverId) {
+        typingIndicator.classList.remove('hidden');
+      }
+    });
+    
+    socket.on('user-stop-typing', function(data) {
+      if (data.userId == receiverId) {
+        typingIndicator.classList.add('hidden');
+      }
+    });
+    
+    // Handle errors
+    socket.on('error', function(error) {
+      console.error('Socket error:', error);
+      Swal.fire({
+        title: 'خطأ',
+        text: error.message || 'حدث خطأ في الاتصال',
+        icon: 'error',
+        confirmButtonText: 'حسناً'
+      });
+    });
+    
+    // Handle form submission
+    messageForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const message = messageInput.value.trim();
+      
+      if (!message) {
+        return;
+      }
+      
+      // Send message via socket
+      socket.emit('send-message', {
+        receiverId: receiverId,
+        message: message,
+        conversationId: conversationId
+      });
+      
+      // Add message to UI immediately
+      const now = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+      addMessageToUI(message, true, now, false);
+      
+      // Clear input
+      messageInput.value = '';
+      messageInput.focus();
+      
+      // Stop typing indicator
+      socket.emit('stop-typing', {
+        receiverId: receiverId
+      });
+    });
+    
+    // Handle typing indicator
+    let typingTimer;
+    messageInput.addEventListener('input', function() {
+      // Send typing indicator
+      socket.emit('typing', {
+        receiverId: receiverId
+      });
+      
+      // Clear existing timer
+      clearTimeout(typingTimer);
+      
+      // Set new timer to stop typing after 2 seconds of inactivity
+      typingTimer = setTimeout(function() {
+        socket.emit('stop-typing', {
+          receiverId: receiverId
+        });
+      }, 2000);
+    });
+    
+    // Search conversations
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const conversations = document.querySelectorAll('.conversation-item');
+        
+        conversations.forEach(function(conversation) {
+          const userName = conversation.querySelector('.text-sm.font-medium').textContent.toLowerCase();
+          const lastMessage = conversation.querySelector('.text-sm.text-gray-500').textContent.toLowerCase();
+          
+          if (userName.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+            conversation.style.display = 'block';
+          } else {
+            conversation.style.display = 'none';
+          }
+        });
+      });
+    }
+    
+    // Update page information when visibility changes
+    document.addEventListener('visibilitychange', function() {
+      // Notify the server about page visibility
+      if (document.visibilityState === 'visible') {
+        // User is on this page
+        socket.emit('page-change', {
+          page: 'conversation',
+          conversationId: conversationId
+        });
+        
+        // Mark messages as read
+        socket.emit('mark-messages-read', {
+          senderId: receiverId
+        });
+        
+        // Reset unread counter and page title
+        unreadMessagesCount = 0;
+        document.title = 'المحادثة | راحة';
+      } else {
+        // User left this page
+        socket.emit('page-change', {
+          page: 'other'
+        });
+      }
+    });
+  });
+</script>
+
+<!-- Add custom styles for the chat -->
+<style>
+  /* Message styles */
+  .message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin-bottom: 8px;
+    position: relative;
+    word-wrap: break-word;
+  }
+  
+  .message-sent {
+    background-color: #5a67d8;
+    color: white;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  
+  .message-received {
+    background-color: #e5e7eb;
+    color: #374151;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  
+  /* Typing indicator animation */
+  .typing-indicator {
+    transition: all 0.3s ease;
+  }
+  
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #6b7280;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+  
+  .typing-dot:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  
+  .typing-dot:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+  
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: rgba(229, 231, 235, 0.5);
+  }
+</style>

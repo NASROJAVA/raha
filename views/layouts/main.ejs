@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="raha">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'راحة - منصة للصحة النفسية في مكان العمل' %></title>
+  
+  <%- defineContent('head') %>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- DaisyUI -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.0.0/dist/full.css" rel="stylesheet" type="text/css" />
+  
+  <!-- Flowbite -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+  
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  
+  <!-- Tajawal Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  <!-- Tailwind & DaisyUI Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'tajawal': ['Tajawal', 'sans-serif'],
+          },
+          colors: {
+            'primary': '#A3D9A5', // Soft green
+            'primary-focus': '#8AC88C', // Darker green
+            'primary-content': '#1F2937', // Black text on primary
+            'secondary': '#AED9E0', // Light blue
+            'secondary-focus': '#8BC0C8', // Darker blue
+            'secondary-content': '#1F2937', // Black text on secondary
+            'accent': '#F59E0B', // Amber-500
+            'accent-focus': '#D97706', // Amber-600
+            'accent-content': '#1F2937', // Black text on accent
+            'neutral': '#3D4451',
+            'neutral-focus': '#2A2E37',
+            'neutral-content': '#1F2937', // Black text on neutral
+            'base-100': '#FFFFFF',
+            'base-200': '#F8F9FA', // Soft background
+            'base-300': '#F3F4F6',
+            'base-content': '#1F2937',
+            'info': '#3ABFF8',
+            'info-content': '#1F2937', // Black text on info
+            'success': '#36D399',
+            'success-content': '#1F2937', // Black text on success
+            'warning': '#FBBD23',
+            'warning-content': '#1F2937', // Black text on warning
+            'error': '#F87272',
+            'error-content': '#1F2937', // Black text on error
+          }
+        }
+      },
+      daisyui: {
+        themes: [
+          {
+            raha: {
+              "primary": "#A3D9A5", // Soft green
+              "primary-focus": "#8AC88C", // Darker green
+              "primary-content": "#1F2937", // Black text on primary
+              "secondary": "#AED9E0", // Light blue
+              "secondary-focus": "#8BC0C8", // Darker blue
+              "secondary-content": "#1F2937", // Black text on secondary
+              "accent": "#F59E0B",
+              "accent-focus": "#D97706",
+              "accent-content": "#1F2937", // Black text on accent
+              "neutral": "#3D4451",
+              "neutral-focus": "#2A2E37",
+              "neutral-content": "#1F2937", // Black text on neutral
+              "base-100": "#FFFFFF",
+              "base-200": "#F8F9FA", // Soft background
+              "base-300": "#F3F4F6",
+              "base-content": "#1F2937",
+              "info": "#3ABFF8",
+              "info-content": "#1F2937", // Black text on info
+              "success": "#36D399",
+              "success-content": "#1F2937", // Black text on success
+              "warning": "#FBBD23",
+              "warning-content": "#1F2937", // Black text on warning
+              "error": "#F87272",
+              "error-content": "#1F2937", // Black text on error
+            },
+          },
+        ],
+      },
+    }
+  </script>
+</head>
+<body class="font-tajawal min-h-screen flex flex-col bg-base-200" <% if (user) { %>data-user-id="<%= user.id %>" data-user-role="<%= user.role %>"<% } %>>
+  <!-- Header -->
+  <%- include('../partials/header') %>
+  
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8 transition-all duration-300">
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-4"></div>
+    
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success shadow-md rounded-xl mb-6 animate__animated animate__fadeIn">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span><%= success %></span>
+        </div>
+        <div class="flex-none">
+          <button class="btn btn-sm btn-ghost rounded-lg">إغلاق</button>
+        </div>
+      </div>
+    <% } %>
+    
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error shadow-md rounded-xl mb-6 animate__animated animate__fadeIn">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span><%= error %></span>
+        </div>
+        <div class="flex-none">
+          <button class="btn btn-sm btn-ghost rounded-lg">إغلاق</button>
+        </div>
+      </div>
+    <% } %>
+    
+    <%- body %>
+    
+    <!-- Back to top button -->
+    <button id="back-to-top" class="fixed bottom-6 left-6 p-3 rounded-full bg-primary text-white shadow-lg transition-all duration-300 opacity-0 translate-y-10 hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
+  </main>
+  
+  <!-- Footer -->
+  <%- include('../partials/footer') %>
+  
+  <!-- Flowbite JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+  
+  <!-- Socket.io (for real-time features) -->
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- Custom JS -->
+  <script src="/js/main.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/init-notifications.js"></script>
+  <script src="/js/socket-debug.js"></script>
+  
+  <!-- Alert auto-dismiss and toast functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Auto-dismiss alerts after 5 seconds
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(alert => {
+        setTimeout(() => {
+          alert.classList.add('animate__fadeOut');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        }, 5000);
+      });
+      
+      // Close alert when close button is clicked
+      const closeButtons = document.querySelectorAll('.alert button');
+      closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const alert = this.closest('.alert');
+          alert.classList.add('animate__fadeOut');
+          setTimeout(() => {
+            alert.remove();
+          }, 500);
+        });
+      });
+      
+      // Back to top button functionality
+      const backToTopButton = document.getElementById('back-to-top');
+      if (backToTopButton) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 300) {
+            backToTopButton.classList.remove('opacity-0', 'translate-y-10', 'hidden');
+            backToTopButton.classList.add('opacity-100', 'translate-y-0');
+          } else {
+            backToTopButton.classList.add('opacity-0', 'translate-y-10');
+            backToTopButton.classList.remove('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+              if (window.scrollY <= 300) {
+                backToTopButton.classList.add('hidden');
+              }
+            }, 300);
+          }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+      
+      // Toast notification function
+      window.showToast = function(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `flex items-center p-4 mb-4 rounded-xl shadow-md text-sm ${type === 'success' ? 'bg-green-50 text-green-800' : type === 'error' ? 'bg-red-50 text-red-800' : 'bg-blue-50 text-blue-800'} animate__animated animate__fadeInRight`;
+        toast.innerHTML = `
+          <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 ${type === 'success' ? 'bg-green-100 text-green-600' : type === 'error' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'} rounded-lg">
+            ${type === 'success' ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : type === 'error' ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>' : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'}
+          </div>
+          <div class="mx-3 text-sm font-normal">${message}</div>
+          <button type="button" class="mr-auto -mx-1.5 -my-1.5 ${type === 'success' ? 'bg-green-50 text-green-600 hover:text-green-800' : type === 'error' ? 'bg-red-50 text-red-600 hover:text-red-800' : 'bg-blue-50 text-blue-600 hover:text-blue-800'} rounded-lg focus:ring-2 ${type === 'success' ? 'focus:ring-green-400' : type === 'error' ? 'focus:ring-red-400' : 'focus:ring-blue-400'} p-1.5 hover:bg-gray-100 inline-flex h-8 w-8" data-dismiss-target="#toast-success" aria-label="Close">
+            <span class="sr-only">إغلاق</span>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+          </button>
+        `;
+        toastContainer.appendChild(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+          toast.classList.remove('animate__fadeInRight');
+          toast.classList.add('animate__fadeOutRight');
+          setTimeout(() => {
+            toast.remove();
+          }, 500);
+        }, 5000);
+        
+        // Close when the X is clicked
+        toast.querySelector('button').addEventListener('click', () => {
+          toast.classList.remove('animate__fadeInRight');
+          toast.classList.add('animate__fadeOutRight');
+          setTimeout(() => {
+            toast.remove();
+          }, 500);
+        });
+      }
+    });
+  </script>
+  
+  <%- script %>
+</body>
+</html>

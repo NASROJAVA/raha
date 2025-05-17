@@ -1,0 +1,55 @@
+<!-- Psychologist Sidebar -->
+<div class="w-full lg:w-1/4 px-4 mb-6 lg:mb-0">
+  <div class="card bg-base-100 shadow-xl sticky top-4">
+    <div class="card-body p-6">
+      <div class="flex flex-col items-center mb-6">
+        <div class="avatar placeholder">
+          <div class="bg-primary text-primary-content rounded-full w-24">
+            <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="<%= user.first_name %> <%= user.last_name %>" class="rounded-full w-10 h-10 object-cover" />
+              <% } else { %>
+                <div class="bg-primary text-primary-content rounded-full w-10 h-10 flex items-center justify-center text-lg font-medium">
+                  <span><%= user.first_name.charAt(0) %><%= user.last_name.charAt(0) %></span>
+                </div>
+              <% } %>
+          </div>
+        </div>
+        <h2 class="text-xl font-semibold mt-3"><%= user.name %></h2>
+        <div class="badge badge-accent mt-2">معالج نفسي</div>
+      </div>      
+      
+      <div class="divider"></div>
+      
+      <h3 class="font-bold text-lg mb-4">إجراءات سريعة</h3>
+      <div class="flex flex-col gap-2 mb-6">
+        <a href="/psychologist/sessions" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          إدارة الجلسات
+        </a>
+        <a href="/psychologist/availability" class="btn btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          تحديد الأوقات المتاحة
+        </a>
+        <a href="/psychologist/profile" class="btn btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          تحديث الملف الشخصي
+        </a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <a href="/auth/logout" class="btn btn-error btn-outline w-full gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        تسجيل الخروج
+      </a>
+    </div>
+  </div>
+</div>

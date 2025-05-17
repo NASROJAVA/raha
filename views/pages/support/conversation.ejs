@@ -1,0 +1,580 @@
+<%- contentFor('title') %>
+المحادثة | راحة
+
+<%- contentFor('body') %>
+<div class="flex flex-col h-[calc(100vh-12rem)] bg-base-200 rounded-lg shadow-lg overflow-hidden">
+  <!-- Chat Header -->
+  <div class="bg-base-100 p-4 border-b border-base-300 flex items-center justify-between sticky top-0 z-10">
+    <div class="flex items-center">
+      <a href="/support" class="btn btn-circle btn-ghost mr-3 hidden md:flex">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+      </a>
+      <div class="avatar placeholder mr-3">
+        <div class="bg-primary text-primary-content rounded-full w-12">
+          <span><%= psychologist.first_name.charAt(0) %><%= psychologist.last_name.charAt(0) %></span>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center">
+          <h2 class="font-bold text-lg"><%= psychologist.first_name %> <%= psychologist.last_name %></h2>
+          <span id="online-status" class="mr-2 flex items-center text-xs font-medium">
+            <span class="badge badge-xs badge-success online-indicator mr-1"></span>
+            <span class="status-text opacity-75">غير متصل</span>
+          </span>
+        </div>
+        <p class="text-sm opacity-75"><%= psychologist.specialization || 'معالج نفسي' %></p>
+      </div>
+    </div>
+    <div class="flex items-center">
+      <button class="btn btn-circle btn-ghost" title="معلومات المعالج">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+      <a href="/sessions/book?psychologist_id=<%= psychologist.id %>" class="btn btn-outline btn-primary btn-sm mx-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        حجز جلسة
+      </a>
+      <a href="/support" class="btn btn-primary btn-sm md:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        العودة
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Messages Container -->
+    <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200">
+      <% if (conversation && conversation.length > 0) { %>
+        <% conversation.forEach(message => { 
+          const isSent = message.sender_id === user.id;
+        %>
+            <div class="chat <%= isSent ? 'chat-end' : 'chat-start' %>">
+              <div class="chat-bubble <%= isSent ? 'chat-bubble-primary' : 'chat-bubble-secondary' %>">
+                <%= message.message %>
+                <div class="chat-footer opacity-75 text-xs mt-1">
+                  <%= new Date(message.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) %>
+                  <% if (isSent) { %>
+                    <span class="mr-1 message-status">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center h-full py-10">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-24">
+                <span class="text-3xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold mt-6 mb-2">ابدأ محادثة جديدة</h3>
+            <p class="text-center max-w-md mb-6 opacity-75">يمكنك التواصل مع <%= psychologist.first_name %> <%= psychologist.last_name %> للحصول على الدعم والمشورة النفسية</p>
+            <div class="flex flex-wrap gap-3 justify-center">
+              <div class="badge badge-info gap-2 p-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                محادثة آمنة ومشفرة
+              </div>
+              <div class="badge badge-success gap-2 p-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                رد سريع خلال دقائق
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+      
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" class="hidden bg-base-200 rounded-full py-2 px-4 max-w-xs mx-4 mb-4 flex items-center">
+        <div class="loading loading-dots loading-xs"></div>
+        <span class="text-sm opacity-75 mr-1"><%= psychologist.first_name %> يكتب...</span>
+      </div>
+    </div>
+    
+    <!-- Message Form -->
+    <div class="bg-base-100 border-t border-base-300 p-4">
+      <form id="message-form" class="flex items-center">
+        <input type="hidden" id="receiver-id" value="<%= psychologist.id %>">
+        <input type="hidden" id="conversation-id" value="<%= psychologist.id %>">
+        
+        <button type="button" class="btn btn-circle btn-ghost ml-2" title="إرفاق ملف">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+        </button>
+        
+        <div class="flex-grow relative">
+          <input type="text" id="message-input" class="input input-bordered w-full" placeholder="اكتب رسالتك هنا...">
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-circle ml-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform rotate-180" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Include Socket.io client library -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Include chat script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const messagesContainer = document.getElementById('messages-container');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const receiverId = document.getElementById('receiver-id').value;
+    const conversationId = document.getElementById('conversation-id').value;
+    const userId = document.body.getAttribute('data-user-id');
+    const onlineStatus = document.getElementById('online-status');
+    const onlineIndicator = onlineStatus.querySelector('.online-indicator');
+    const statusText = onlineStatus.querySelector('.status-text');
+    
+    // Sound for new messages
+    const notificationSound = new Audio('/sounds/notification.mp3');
+    
+    // Flag to track if page is visible
+    let isPageVisible = true;
+    let unreadMessagesCount = 0;
+    
+    // Track if user is currently in this window/tab
+    document.addEventListener('visibilitychange', function() {
+      isPageVisible = document.visibilityState === 'visible';
+      
+      // If page becomes visible again and there are unread messages
+      if (isPageVisible && unreadMessagesCount > 0) {
+        // Reset unread counter
+        unreadMessagesCount = 0;
+        // Reset page title
+        document.title = 'المحادثة | راحة';
+      }
+    });
+    
+    // Scroll to bottom of messages container
+    function scrollToBottom() {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    scrollToBottom();
+    
+    // Initialize Socket.io
+    const socket = io();
+    
+    // When socket connects
+    socket.on('connect', function() {
+      console.log('Socket connected: ' + socket.id);
+      
+      // Register with the socket server
+      socket.emit('register-user', {
+        userId: userId,
+        userRole: 'employee',
+        currentPage: 'conversation',
+        conversationId: conversationId
+      });
+      
+      // Explicitly join the chat room
+      socket.emit('join-chat', {
+        senderId: userId,
+        receiverId: receiverId
+      });
+      console.log('Joining chat room for users:', userId, receiverId);
+      
+      // Mark all messages from this psychologist as read
+      socket.emit('mark-messages-read', {
+        senderId: receiverId
+      });
+    });
+    
+    // Update online status UI
+    function updateOnlineStatusUI(isOnline) {
+      if (isOnline) {
+        onlineIndicator.classList.remove('badge-error');
+        onlineIndicator.classList.add('badge-success');
+        statusText.textContent = 'متصل الآن';
+      } else {
+        onlineIndicator.classList.remove('badge-success');
+        onlineIndicator.classList.add('badge-error');
+        statusText.textContent = 'غير متصل';
+      }
+    }
+    
+    // Add a message to the UI
+    function addMessageToUI(message, isSent, time, isRead = false) {
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = `chat ${isSent ? 'chat-end' : 'chat-start'}`;
+      
+      const messageBubble = document.createElement('div');
+      messageBubble.className = `chat-bubble ${isSent ? 'chat-bubble-primary' : 'chat-bubble-secondary'}`;
+      messageBubble.textContent = message;
+      
+      const messageFooter = document.createElement('div');
+      messageFooter.className = 'chat-footer opacity-75 text-xs mt-1';
+      messageFooter.textContent = time;
+      
+      if (isSent) {
+        const messageStatus = document.createElement('span');
+        messageStatus.className = 'mr-1 message-status';
+        messageStatus.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline ${isRead ? 'text-success' : 'text-base-content/50'}" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        `;
+        messageFooter.appendChild(messageStatus);
+      }
+      
+      messageBubble.appendChild(messageFooter);
+      messageWrapper.appendChild(messageBubble);
+      messagesContainer.appendChild(messageWrapper);
+      
+      // Scroll to bottom
+      scrollToBottom();
+    }
+    
+    // Play notification sound
+    function playNotificationSound() {
+      try {
+        notificationSound.play();
+      } catch (error) {
+        console.error('Error playing notification sound:', error);
+      }
+    }
+    
+    // Show notification using SweetAlert2
+    function showNotification(message, senderName) {
+      // Only show notification if user is not on the page or outside the specific conversation
+      const currentPath = window.location.pathname;
+      const onSpecificConversation = currentPath === `/support/conversation/${receiverId}`;
+      
+      if (!isPageVisible || !onSpecificConversation) {
+        // Update page title to show unread messages
+        unreadMessagesCount++;
+        document.title = `(${unreadMessagesCount}) رسالة جديدة | راحة`;
+        
+        // Show notification
+        Swal.fire({
+          title: 'رسالة جديدة',
+          text: `${senderName}: ${message}`,
+          icon: 'info',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+            toast.addEventListener('click', () => {
+              window.focus();
+              toast.addEventListener('click', () => {
+                // Navigate to the conversation when clicked
+                window.location.href = `/support/conversation/${message.sender_id}`;
+              });
+              Swal.close();
+            });
+          }
+        });
+      }
+    }
+    
+    // Socket connection events
+    socket.on('connect', function() {
+      console.log('Socket connected: ' + socket.id);
+      
+      // Register with the socket server
+      socket.emit('register-user', {
+        userId: userId,
+        userRole: 'employee',
+        currentPage: 'conversation',
+        conversationId: conversationId
+      });
+      
+      // Mark all messages from this psychologist as read
+      socket.emit('mark-messages-read', {
+        senderId: receiverId
+      });
+    });
+    
+    socket.on('disconnect', function() {
+      console.log('Socket disconnected');
+      updateOnlineStatusUI(false);
+    });
+    
+    socket.on('connect_error', function(error) {
+      console.log('Connection error: ' + error);
+    });
+    
+    // Socket event handlers for messaging
+    socket.on('user-registered', function(data) {
+      console.log('Registered with socket server', data);
+    });
+    
+    // Handle psychologist online status change
+    socket.on('user-status-change', function(data) {
+      if (data.userId == receiverId) {
+        updateOnlineStatusUI(data.isOnline);
+      }
+    });
+    
+    // Handle incoming messages
+    socket.on('new-message', function(message) {
+      console.log('New message received:', message);
+      
+      // If the message is from the psychologist we're currently chatting with
+      if (message.sender_id == receiverId) {
+        // Add message to UI
+        addMessageToUI(message.message, false, message.time);
+        
+        // Play notification sound
+        playNotificationSound();
+        
+        // Show notification if needed
+        if (message.needsNotification) {
+          showNotification(message.message, message.sender_name);
+        }
+        
+        // Hide typing indicator
+        typingIndicator.classList.add('hidden');
+        
+        // Mark message as read
+        socket.emit('mark-messages-read', {
+          senderId: receiverId
+        });
+      } else {
+        // Message from different psychologist
+        if (message.needsNotification) {
+          // Play notification sound
+          playNotificationSound();
+          
+          // Show notification
+          showNotification(message.message, message.sender_name);
+        }
+      }
+    });
+    
+    // Handle message sent confirmation
+    socket.on('message-sent', function(message) {
+      console.log('Message sent confirmation received:', message);
+    });
+    
+    // Handle read receipts
+    socket.on('messages-read', function(data) {
+      console.log('Messages read by:', data.by);
+      
+      // Update read status for all sent messages
+      const messageStatuses = document.querySelectorAll('.message-status svg');
+      messageStatuses.forEach(function(statusIcon) {
+        statusIcon.classList.remove('text-base-content/50');
+        statusIcon.classList.add('text-success');
+      });
+    });
+    
+    // Handle typing indicators
+    socket.on('user-typing', function(data) {
+      if (data.userId == receiverId) {
+        typingIndicator.classList.remove('hidden');
+      }
+    });
+    
+    socket.on('user-stop-typing', function(data) {
+      if (data.userId == receiverId) {
+        typingIndicator.classList.add('hidden');
+      }
+    });
+    
+    // Handle errors
+    socket.on('error', function(error) {
+      console.error('Socket error:', error);
+      Swal.fire({
+        title: 'خطأ',
+        text: error.message || 'حدث خطأ في الاتصال',
+        icon: 'error',
+        confirmButtonText: 'حسناً'
+      });
+    });
+    
+    // Handle form submission
+    messageForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const message = messageInput.value.trim();
+      
+      if (!message) {
+        return;
+      }
+      
+      // Send message via socket
+      socket.emit('send-message', {
+        receiverId: receiverId,
+        message: message,
+        conversationId: conversationId
+      });
+      
+      // Add message to UI immediately
+      const now = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+      addMessageToUI(message, true, now, false);
+      
+      // Clear input
+      messageInput.value = '';
+      messageInput.focus();
+      
+      // Stop typing indicator
+      socket.emit('stop-typing', {
+        receiverId: receiverId
+      });
+    });
+    
+    // Handle typing indicator
+    let typingTimer;
+    messageInput.addEventListener('input', function() {
+      // Send typing indicator
+      socket.emit('typing', {
+        receiverId: receiverId
+      });
+      
+      // Clear existing timer
+      clearTimeout(typingTimer);
+      
+      // Set new timer to stop typing after 2 seconds of inactivity
+      typingTimer = setTimeout(function() {
+        socket.emit('stop-typing', {
+          receiverId: receiverId
+        });
+      }, 2000);
+    });
+    
+    // Update page information when visibility changes
+    document.addEventListener('visibilitychange', function() {
+      // Notify the server about page visibility
+      if (document.visibilityState === 'visible') {
+        // User is on this page
+        socket.emit('page-change', {
+          page: 'conversation',
+          conversationId: conversationId
+        });
+        
+        // Mark messages as read
+        socket.emit('mark-messages-read', {
+          senderId: receiverId
+        });
+      } else {
+        // User left this page
+        socket.emit('page-change', {
+          page: 'other'
+        });
+      }
+    });
+  });
+</script>
+
+<!-- Add custom styles for the chat -->
+<style>
+  /* Message styles */
+  .message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin-bottom: 8px;
+    position: relative;
+    word-wrap: break-word;
+  }
+  
+  .message-sent {
+    background-color: #5a67d8;
+    color: white;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  
+  .message-received {
+    background-color: #e5e7eb;
+    color: #374151;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  
+  /* Typing indicator animation */
+  .typing-indicator {
+    transition: all 0.3s ease;
+  }
+  
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #6b7280;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+  
+  .typing-dot:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  
+  .typing-dot:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+  
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: rgba(229, 231, 235, 0.5);
+  }
+  
+  /* Connection status indicator */
+  .connection-status {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    opacity: 0.8;
+  }
+  
+  .connection-status:hover {
+    opacity: 1;
+  }
+</style>

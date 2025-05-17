@@ -1,0 +1,20 @@
+<!-- Debug version of training view -->
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">Training Material Debug View</h1>
+  
+  <div class="bg-white p-4 rounded shadow mb-4">
+    <h2 class="text-lg font-semibold mb-2">Debug Information</h2>
+    <pre class="bg-gray-100 p-4 rounded overflow-auto text-sm"><%= JSON.stringify({path: path, title: title, user: user ? 'User is defined' : 'User is not defined'}, null, 2) %></pre>
+  </div>
+  
+  <% if (typeof material !== 'undefined') { %>
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-semibold mb-2">Material Data</h2>
+      <pre class="bg-gray-100 p-4 rounded overflow-auto text-sm"><%= JSON.stringify(material, null, 2) %></pre>
+    </div>
+  <% } else { %>
+    <div class="bg-red-100 p-4 rounded">
+      <p class="text-red-600">Material is undefined!</p>
+    </div>
+  <% } %>
+</div>

@@ -1,0 +1,593 @@
+<%- contentFor('title') %>
+الرسائل | راحة
+
+<%- contentFor('body') %>
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex flex-wrap">
+      <!-- Sidebar -->
+      <%- include('../../partials/psychologist-sidebar') %>
+      
+      <!-- Main Content -->
+      <div class="w-full lg:w-3/4 px-4">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-l from-primary to-primary-dark rounded-xl shadow-lg overflow-hidden mb-6">
+          <div class="relative px-6 py-8">
+            <div class="absolute inset-0 opacity-10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                <defs>
+                  <pattern id="pattern" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <rect width="100%" height="100%" fill="none"/>
+                    <circle cx="20" cy="20" r="2" fill="currentColor" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#pattern)" />
+              </svg>
+            </div>
+            <div class="relative flex items-center justify-between">
+              <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white">الرسائل</h1>
+                <p class="text-white text-opacity-90 mt-1">إدارة المحادثات مع المستخدمين</p>
+              </div>
+              <div class="hidden md:flex items-center">
+                <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 text-white text-center ml-4">
+                  <div class="text-2xl font-bold"><%= conversations ? conversations.length : 0 %></div>
+                  <div class="text-xs">محادثة نشطة</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 text-white text-center">
+                  <div class="text-2xl font-bold" id="unreadTotal">0</div>
+                  <div class="text-xs">رسالة جديدة</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Messages Container -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-3 h-[600px]">
+            <!-- Conversations List -->
+            <div class="md:col-span-1 border-l border-gray-200 flex flex-col h-full">
+              <!-- Search Header -->
+              <div class="bg-white p-4 border-b border-gray-200 sticky top-0 z-10">
+                <div class="relative">
+                  <input type="text" id="searchConversations" class="w-full pr-10 pl-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary bg-gray-50" placeholder="بحث عن محادثة...">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="flex mt-4 border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                  <button id="filter-all" class="filter-tab px-4 py-2 text-primary border-b-2 border-primary font-medium text-sm ml-4 whitespace-nowrap active">الكل</button>
+                  <button id="filter-unread" class="filter-tab px-4 py-2 text-gray-500 hover:text-gray-700 font-medium text-sm ml-4 whitespace-nowrap">غير مقروءة</button>
+                  <button id="filter-latest" class="filter-tab px-4 py-2 text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">الأحدث</button>
+                </div>
+              </div>
+              
+              <!-- Conversations List -->
+              <div class="overflow-y-auto flex-1 custom-scrollbar">
+                <div id="conversationsList" class="divide-y divide-gray-200">
+                  <% if (conversations && conversations.length > 0) { %>
+                    <% conversations.forEach(conversation => { %>
+                      <a href="/psychologist/messages/<%= conversation.userId %>" class="conversation-item block p-4 hover:bg-gray-50 transition duration-200 ease-in-out relative <%= conversation.unreadCount > 0 ? 'bg-blue-50' : '' %>">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-sm">
+                              <%= conversation.userName.charAt(0) %>
+                            </div>
+                          </div>
+                          <div class="mr-3 flex-1">
+                            <div class="flex items-center justify-between">
+                              <p class="text-sm font-bold text-gray-900"><%= conversation.userName %></p>
+                              <p class="text-xs text-gray-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <%= conversation.lastMessageTime %>
+                              </p>
+                            </div>
+                            <p class="text-sm text-gray-600 truncate mt-1"><%= conversation.lastMessage %></p>
+                            
+                            <!-- Status Indicators -->
+                            <div class="flex items-center mt-1">
+                              <% if (conversation.unreadCount > 0) { %>
+                                <span class="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-xs font-bold leading-none text-white bg-primary rounded-full ml-2">
+                                  <%= conversation.unreadCount %>
+                                </span>
+                              <% } %>
+                              <div class="flex space-x-2 space-x-reverse">
+                                <!-- Online Status -->
+                                <span class="text-xs text-gray-500">
+                                  <% if (conversation.isOnline) { %>
+                                    <span class="flex items-center">
+                                      <span class="h-2 w-2 bg-green-500 rounded-full ml-1"></span>
+                                      متصل الآن
+                                    </span>
+                                  <% } else { %>
+                                    <span class="flex items-center">
+                                      <span class="h-2 w-2 bg-gray-300 rounded-full ml-1"></span>
+                                      غير متصل
+                                    </span>
+                                  <% } %>
+                                </span>
+
+                                <!-- Availability Status -->
+                                <span class="text-xs mx-2">
+                                  <% if (conversation.isOnline) { %>
+                                    <span class="flex items-center text-green-600 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                      </svg>
+                                      متاح
+                                    </span>
+                                  <% } else { %>
+                                    <span class="flex items-center text-gray-500">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                      غير متاح
+                                    </span>
+                                  <% } %>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </a>
+                    <% }); %>
+                  <% } else { %>
+                    <div class="flex flex-col items-center justify-center py-16">
+                      <div class="bg-gray-100 rounded-full p-6 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                      </div>
+                      <p class="text-gray-500 font-medium">لا توجد محادثات</p>
+                      <p class="text-gray-400 text-sm mt-1">ستظهر المحادثات الجديدة هنا</p>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          
+          <!-- Welcome Screen -->
+          <div class="md:col-span-2 bg-gray-50 h-full">
+            <div class="h-full flex flex-col items-center justify-center text-center p-8">
+              <div class="bg-white rounded-full p-8 shadow-lg mb-6 relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary to-primary-dark opacity-10 rounded-full"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-primary relative" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-3">مركز الرسائل</h2>
+              <p class="text-gray-600 mb-8 max-w-md">مرحبًا بك في مركز الرسائل. يمكنك اختيار محادثة من القائمة لعرض الرسائل والتواصل مع المستخدمين.</p>
+              
+              <!-- Stats Cards -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col items-center">
+                  <div class="text-3xl font-bold text-primary mb-1" id="totalConversations"><%= conversations ? conversations.length : 0 %></div>
+                  <div class="text-gray-500 text-sm">محادثة نشطة</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col items-center">
+                  <div class="text-3xl font-bold text-blue-500 mb-1" id="totalMessages">0</div>
+                  <div class="text-gray-500 text-sm">رسالة اليوم</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col items-center">
+                  <div class="text-3xl font-bold text-green-500 mb-1" id="onlineUsers">0</div>
+                  <div class="text-gray-500 text-sm">مستخدم متصل</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Socket.io client library -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Include chat script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const userId = document.body.getAttribute('data-user-id');
+    
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+    
+    // Initialize Socket.io
+    const socket = io();
+    
+    // Initialize counters
+    let totalMessages = 0;
+    let onlineUsers = 0;
+    const totalMessagesElement = document.getElementById('totalMessages');
+    const onlineUsersElement = document.getElementById('onlineUsers');
+    const unreadTotalElement = document.getElementById('unreadTotal');
+    
+    // Connection status indicator
+    const connectionStatus = document.createElement('div');
+    connectionStatus.className = 'connection-status';
+    document.body.appendChild(connectionStatus);
+    
+    function updateConnectionStatus(status) {
+      if (status === 'connected') {
+        connectionStatus.innerHTML = '<span class="dot dot-green"></span> متصل';
+        connectionStatus.classList.add('status-connected');
+        connectionStatus.classList.remove('status-connecting', 'status-disconnected');
+      } else if (status === 'connecting') {
+        connectionStatus.innerHTML = '<span class="dot dot-yellow"></span> جاري الاتصال...';
+        connectionStatus.classList.add('status-connecting');
+        connectionStatus.classList.remove('status-connected', 'status-disconnected');
+      } else {
+        connectionStatus.innerHTML = '<span class="dot dot-red"></span> غير متصل';
+        connectionStatus.classList.add('status-disconnected');
+        connectionStatus.classList.remove('status-connected', 'status-connecting');
+      }
+    }
+    
+    // Socket connection events
+    socket.on('connect', function() {
+      console.log('Socket connected');
+      updateConnectionStatus('connected');
+      
+      // Register with the socket server
+      socket.emit('register-user', {
+        userId: userId,
+        userRole: 'psychologist',
+        currentPage: 'messages'
+      });
+      
+      // Update online users count
+      onlineUsers++;
+      if (onlineUsersElement) {
+        onlineUsersElement.textContent = onlineUsers;
+      }
+    });
+    
+    socket.on('disconnect', function() {
+      console.log('Socket disconnected');
+      updateConnectionStatus('disconnected');
+    });
+    
+    socket.on('connect_error', function(error) {
+      console.log('Connection error: ' + error);
+      updateConnectionStatus('disconnected');
+    });
+    
+    socket.on('reconnecting', function() {
+      console.log('Reconnecting...');
+      updateConnectionStatus('connecting');
+    });
+    
+    // Handle new message events
+    socket.on('new-message', function(message) {
+      console.log('New message received: ' + JSON.stringify(message));
+      
+      // Update total messages count
+      totalMessages++;
+      if (totalMessagesElement) {
+        totalMessagesElement.textContent = totalMessages;
+      }
+      
+      // If we're not in the conversation view with this sender
+      if (window.location.pathname !== `/psychologist/messages/${message.sender_id}`) {
+        // Play notification sound
+        playNotificationSound();
+        
+        // Show notification
+        showNotification(message);
+        
+        // Update conversation in sidebar
+        updateConversationInSidebar(message.sender_id, message.message, true);
+        
+        // Update unread total in header
+        const currentUnread = parseInt(unreadTotalElement.textContent || '0');
+        unreadTotalElement.textContent = currentUnread + 1;
+      }
+    });
+    
+    // Function to update conversation in sidebar
+    function updateConversationInSidebar(senderId, messageText, isUnread) {
+      // Find conversation item in sidebar
+      const conversationItem = document.querySelector(`.conversation-item[href="/psychologist/messages/${senderId}"]`);
+      
+      if (conversationItem) {
+        // Update last message text
+        const messageElement = conversationItem.querySelector('.text-sm.text-gray-600.truncate');
+        if (messageElement) {
+          messageElement.textContent = messageText;
+        }
+        
+        // Update timestamp
+        const timeElement = conversationItem.querySelector('.text-xs.text-gray-500.flex.items-center');
+        if (timeElement) {
+          // Keep the SVG icon
+          const svgIcon = timeElement.querySelector('svg');
+          timeElement.innerHTML = '';
+          if (svgIcon) timeElement.appendChild(svgIcon);
+          timeElement.appendChild(document.createTextNode(new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })));
+        }
+        
+        // Highlight the conversation item
+        conversationItem.classList.add('bg-blue-50');
+        setTimeout(() => {
+          conversationItem.classList.remove('bg-blue-50');
+        }, 3000);
+        
+        // Update unread badge
+        if (isUnread) {
+          const unreadBadge = conversationItem.querySelector('.inline-flex.items-center.justify-center.h-5.min-w-5.px-1\\.5.text-xs.font-bold.leading-none.text-white.bg-primary.rounded-full');
+          
+          if (!unreadBadge) {
+            // Create new badge if it doesn't exist
+            const statusContainer = conversationItem.querySelector('.flex.items-center.mt-1');
+            if (statusContainer) {
+              const badgeSpan = document.createElement('span');
+              badgeSpan.className = 'inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-xs font-bold leading-none text-white bg-primary rounded-full ml-2';
+              badgeSpan.textContent = '1';
+              statusContainer.prepend(badgeSpan);
+            }
+          } else {
+            const count = parseInt(unreadBadge.textContent) || 0;
+            unreadBadge.textContent = count + 1;
+          }
+        }
+        // Move conversation to top of list
+        const conversationsList = document.getElementById('conversationsList');
+        if (conversationsList && conversationsList.firstChild) {
+          conversationsList.insertBefore(conversationItem, conversationsList.firstChild);
+        }
+      } else if (isUnread) {
+        // If conversation doesn't exist in the list, we might want to add it
+        // This would require an API call to get user details
+        console.log('Conversation not found in sidebar: ' + senderId);
+      }
+    }
+    
+    // Play notification sound
+    function playNotificationSound() {
+      try {
+        const audio = new Audio('/sounds/notification.mp3');
+        audio.play();
+      } catch (error) {
+        console.log('Error playing notification sound: ' + error);
+      }
+    }
+    
+    // Show notification
+    function showNotification(message) {
+      // Get sender name
+      const senderName = message.sender_name || 'مستخدم';
+      
+      // Use SweetAlert2 if available, otherwise use native alert
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'رسالة جديدة',
+          html: `
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold text-lg ml-3">
+                ${senderName.charAt(0)}
+              </div>
+              <div class="text-right">
+                <div class="font-bold">${senderName}</div>
+                <div class="text-xs text-gray-500">${new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</div>
+              </div>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-lg text-right">${message.message}</div>
+          `,
+          showCloseButton: true,
+          showCancelButton: true,
+          confirmButtonText: `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            عرض المحادثة
+          `,
+          cancelButtonText: 'إغلاق',
+          confirmButtonColor: '#4CAF50',
+          cancelButtonColor: '#f1f1f1',
+          customClass: {
+            confirmButton: 'rtl',
+            cancelButton: 'rtl'
+          },
+          timer: 10000,
+          timerProgressBar: true,
+          backdrop: `rgba(0,0,0,0.4)`,
+          showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+          },
+          hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Navigate to conversation
+            window.location.href = `/psychologist/messages/${message.sender_id}`;
+          }
+        });
+      } else {
+        // Fallback to browser notification API
+        if ('Notification' in window) {
+          if (Notification.permission === 'granted') {
+            const notification = new Notification('رسالة جديدة من ' + senderName, {
+              body: message.message,
+              icon: '/images/logo.png'
+            });
+            
+            notification.onclick = function() {
+              window.location.href = `/psychologist/messages/${message.sender_id}`;
+            };
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') {
+                showNotification(message);
+              }
+            });
+          }
+        } else {
+          // Fallback to alert
+          const goToConversation = confirm('رسالة جديدة من ' + senderName + ':\n' + message.message + '\n\nهل تريد الانتقال إلى المحادثة؟');
+          if (goToConversation) {
+            window.location.href = `/psychologist/messages/${message.sender_id}`;
+          }
+        }
+      }
+    }
+    
+    // Variables to track current filter state
+    let currentFilter = 'all';
+    let currentSearchQuery = '';
+    
+    // Filter conversations
+    const searchInput = document.getElementById('searchConversations');
+    if (searchInput) {
+      // Real-time search as you type
+      searchInput.addEventListener('input', function() {
+        currentSearchQuery = this.value.toLowerCase();
+        applyFilters();
+      });
+    }
+    
+    // Filter tab functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Remove active class from all tabs
+        filterTabs.forEach(t => {
+          t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          t.classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+        
+        // Add active class to clicked tab
+        this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+        this.classList.remove('text-gray-500', 'hover:text-gray-700');
+        
+        // Set current filter based on tab id
+        currentFilter = this.id.replace('filter-', '');
+        
+        // Apply filters
+        applyFilters();
+      });
+    });
+    
+    // Function to highlight search matches
+    function highlightText(element, query) {
+      if (!query || query === '') {
+        // Reset to original text without highlights
+        element.innerHTML = element.textContent;
+        return;
+      }
+      
+      const text = element.textContent;
+      const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+      element.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+    
+    // Helper function to escape special characters in regex
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    // Function to apply both search and tab filters
+    function applyFilters() {
+      const items = document.querySelectorAll('.conversation-item');
+      
+      items.forEach(item => {
+        const nameElement = item.querySelector('.text-gray-900');
+        const messageElement = item.querySelector('.text-sm.text-gray-600.truncate, .text-gray-500.truncate');
+        
+        const name = nameElement.textContent.toLowerCase();
+        const message = messageElement.textContent.toLowerCase();
+        const unreadBadge = item.querySelector('.inline-flex.items-center.justify-center.h-5.min-w-5');
+        const timestamp = item.querySelector('.text-xs.text-gray-500.flex.items-center');
+        
+        // Check if item matches search query
+        const matchesSearch = currentSearchQuery === '' || 
+                             name.includes(currentSearchQuery) || 
+                             message.includes(currentSearchQuery);
+        
+        // Check if item matches current filter
+        let matchesFilter = true;
+        
+        if (currentFilter === 'unread') {
+          // Only show unread messages
+          matchesFilter = unreadBadge !== null;
+        } else if (currentFilter === 'latest') {
+          // This would ideally sort by date, but for now we'll just show all
+          // We'll handle sorting separately
+          matchesFilter = true;
+        }
+        
+        // Show or hide based on combined filters
+        if (matchesSearch && matchesFilter) {
+          item.style.display = '';
+          
+          // Apply highlighting if there's a search query
+          if (currentSearchQuery !== '') {
+            // Highlight matching text
+            highlightText(nameElement, currentSearchQuery);
+            highlightText(messageElement, currentSearchQuery);
+          } else {
+            // Reset text without highlights
+            nameElement.innerHTML = nameElement.textContent;
+            messageElement.innerHTML = messageElement.textContent;
+          }
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Special handling for 'latest' filter - sort by timestamp
+      if (currentFilter === 'latest') {
+        const conversationsList = document.getElementById('conversationsList');
+        const items = Array.from(conversationsList.querySelectorAll('.conversation-item'));
+        
+        // Sort items by timestamp (newest first)
+        items.sort((a, b) => {
+          const timeA = a.querySelector('.text-xs.text-gray-500.flex.items-center').textContent.trim();
+          const timeB = b.querySelector('.text-xs.text-gray-500.flex.items-center').textContent.trim();
+          
+          // For simplicity, we're comparing the text directly
+          // In a real app, you might want to parse these into Date objects
+          return timeB.localeCompare(timeA);
+        });
+        
+        // Re-append items in sorted order
+        items.forEach(item => {
+          if (item.style.display !== 'none') {
+            conversationsList.appendChild(item);
+          }
+        });
+      }
+    }
+  });
+</script>
+
+<!-- Include chat styles -->
+<link rel="stylesheet" href="/css/chat-styles.css">
+
+<!-- Include psychologist messages styles -->
+<link rel="stylesheet" href="/css/psychologist-messages.css">
+
+<style>
+  /* Additional styles for filter tabs */
+  .filter-tab.active {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+    font-weight: 500;
+  }
+  
+  /* Highlight effect for search matches */
+  .search-highlight {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+</style>

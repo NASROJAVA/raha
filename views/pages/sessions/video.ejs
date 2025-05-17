@@ -1,0 +1,576 @@
+
+<div class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <div class="mb-4">
+            <a href="/sessions/<%= session.id %>" class="flex items-center text-primary hover:text-primary-dark transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                العودة إلى تفاصيل الجلسة
+            </a>
+        </div>
+
+        <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+            <!-- Main video area -->
+            <div class="lg:w-3/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h1 class="text-xl font-bold text-gray-800"><%= session.title || 'جلسة عبر الإنترنت' %></h1>
+                        <div class="flex items-center">
+                            <div id="connectionStatus" class="flex items-center mr-4">
+                                <span class="h-2 w-2 rounded-full bg-yellow-500 mr-2"></span>
+                                <span class="text-sm text-gray-600">جاري الاتصال...</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="toggleAudioBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                                    </svg>
+                                </button>
+                                <button id="toggleVideoBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                <button id="shareScreenBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                <button id="endCallBtn" class="p-2 rounded-full bg-red-500 hover:bg-red-600 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative bg-black" style="height: 70vh;">
+                        <div id="remoteVideoContainer" class="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center">
+                            <div class="text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <p class="mt-4 text-gray-300">في انتظار المشارك الآخر...</p>
+                            </div>
+                        </div>
+                        <!-- Create an actual video element for the remote video stream -->
+                        <video id="remoteVideo" class="absolute inset-0 w-full h-full bg-gray-900 object-cover hidden" autoplay playsinline></video>
+                        <div id="mediaError" class="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center hidden">
+                            <div class="text-center p-6 max-w-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <h3 class="mt-4 text-xl font-bold text-red-500">فشل في الوصول إلى الكاميرا أو الميكروفون</h3>
+                                <p class="mt-2 text-gray-300">لا يمكن الوصول إلى الكاميرا أو الميكروفون. يرجى التأكد من:</p>
+                                <ul class="mt-2 text-gray-300 text-right list-disc list-inside">
+                                    <li>السماح للمتصفح بالوصول إلى الكاميرا والميكروفون</li>
+                                    <li>عدم استخدام الكاميرا أو الميكروفون من قبل تطبيق آخر</li>
+                                    <li>توصيل الكاميرا والميكروفون بشكل صحيح</li>
+                                </ul>
+                                <button id="retryMediaBtn" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition duration-300">إعادة المحاولة</button>
+                            </div>
+                        </div>
+                        <video id="localVideo" class="absolute bottom-4 right-4 w-1/4 h-1/4 bg-gray-800 rounded-lg overflow-hidden object-cover" autoplay playsinline muted></video>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side panel -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                    <div class="p-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">تفاصيل الجلسة</h2>
+                    </div>
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <img src="<%= otherParticipant.avatar || '/images/default-avatar.png' %>" alt="<%= otherParticipant.name %>" class="w-12 h-12 rounded-full mr-3">
+                            <div>
+                                <h3 class="font-semibold"><%= otherParticipant.name %></h3>
+                                <span class="text-sm text-gray-600"><%= user.role === 'employee' ? 'أخصائي نفسي' : 'موظف' %></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center mb-3 text-sm text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <% try { %>
+                                <% const sessionDate = session.session_date || session.date; %>
+                                <%= new Date(sessionDate).toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            <% } catch (e) { %>
+                                <%= session.session_date || session.date %>
+                            <% } %>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <%= session.startTime %> - <%= session.endTime %>
+                        </div>
+                    </div>
+
+                    <!-- Chat section -->
+                    <div class="flex-1 flex flex-col h-full">
+                        <div class="p-4 border-b border-gray-200">
+                            <h3 class="text-md font-semibold text-gray-800 mb-1">محادثة الجلسة</h3>
+                        </div>
+                        <div id="chatMessages" class="flex-1 overflow-y-scroll p-4 space-y-3" style="height: 200px; max-height: 30vh;">
+                            <% if (typeof messages !== 'undefined' && messages.length > 0) { %>
+                                <% messages.forEach(function(message) { %>
+                                    <div class="flex <%= message.sender_id.toString() === user.id.toString() ? 'justify-end' : 'justify-start' %> mb-2">
+                                        <div class="<%= message.sender_id.toString() === user.id.toString() ? 'bg-primary text-white' : 'bg-gray-200' %> rounded-lg py-2 px-4 max-w-xs break-words">
+                                            <p><%= message.message %></p>
+                                            <p class="text-xs text-right mt-1 opacity-70">
+                                                <% try { %>
+                                                    <%= new Date(message.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) %>
+                                                <% } catch (e) { %>
+                                                    <%= message.created_at %>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center text-gray-500 py-4">
+                                    لا توجد رسائل حتى الآن
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="p-4 border-t border-gray-200">
+                            <form id="chatForm" class="flex items-center">
+                                <input type="text" id="chatInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="اكتب رسالتك هنا...">
+                                <button type="submit" class="mr-2 bg-primary text-white rounded-lg p-2 hover:bg-primary-dark">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include WebRTC Handler -->
+<script src="/js/webrtc-handler.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Session and user data
+        const sessionId = '<%= session.id %>';
+        const userId = '<%= user.id %>';
+        const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+        const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+        const shareScreenBtn = document.getElementById('shareScreenBtn');
+        const endCallBtn = document.getElementById('endCallBtn');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const retryMediaBtn = document.getElementById('retryMediaBtn');
+        const mediaError = document.getElementById('mediaError');
+
+        // Get video elements
+        const localVideoEl = document.getElementById('localVideo');
+        const remoteVideoEl = document.getElementById('remoteVideo');
+        const remoteVideoContainer = document.getElementById('remoteVideoContainer');
+        const userRole = '<%= user.role %>';
+        
+        // Initialize socket.io connection - connecting to our server
+        const socket = io();
+        
+        // Add socket debugging
+        socket.on('connect', () => {
+            console.log('Socket.io connected with ID:', socket.id);
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.error('Socket.io connection error:', error);
+        });
+        
+        socket.on('disconnect', (reason) => {
+            console.log('Socket.io disconnected. Reason:', reason);
+        });
+        
+        // Initialize WebRTC
+        const webrtc = new WebRTCHandler({
+            socket: socket,
+            sessionId: sessionId,
+            localVideo: localVideoEl,
+            remoteVideo: remoteVideoEl,
+            userId: userId,
+            userRole: userRole,
+            isInitiator: userRole === 'psychologist',
+            onCallStarted: () => {
+                console.log('Call started successfully!');
+                updateConnectionStatus('connected', 'متصل');
+                // Show the video element and hide the waiting message
+                remoteVideoEl.classList.remove('hidden');
+                remoteVideoContainer.classList.add('hidden');
+            },
+            onCallEnded: () => {
+                console.log('Call ended!');
+                updateConnectionStatus('disconnected', 'غير متصل');
+                // Hide the video element and show the waiting message
+                remoteVideoEl.classList.add('hidden');
+                remoteVideoContainer.classList.remove('hidden');
+                
+                // Reset the container with waiting message
+                remoteVideoContainer.innerHTML = `
+                    <div class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <p class="mt-4 text-gray-300">في انتظار المشارك الآخر...</p>
+                    </div>
+                `;
+            },
+            onReconnected: () => {
+                console.log('Connection re-established!');
+                updateConnectionStatus('connected', 'متصل');
+                // Show the video element and hide the waiting container
+                remoteVideoEl.classList.remove('hidden');
+                remoteVideoContainer.classList.add('hidden');
+            },
+            onReconnectFailed: () => {
+                updateConnectionStatus('failed', 'فشل الاتصال');
+                remoteVideoContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full bg-gray-800 rounded-lg p-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p class="mt-4 text-gray-300">فشل إعادة الاتصال</p>
+                        <button onclick="window.location.reload()" class="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            }
+        });
+        
+        // Register with socket server
+        socket.on('connect', () => {
+            // Register user with socket
+            socket.emit('register-user', {
+                userId: userId,
+                userRole: userRole,
+                currentPage: 'session',
+                sessionId: sessionId
+            });
+            
+            // Join session room
+            console.log(`Joining session ${sessionId} as ${userRole} with ID ${userId}`);
+            socket.emit('join-session', {
+                sessionId: sessionId,
+                userId: userId,
+                userRole: userRole // Make sure we use consistent parameter names with server
+            });
+            
+            // Listen for session join confirmation
+            socket.on('joined-session', (data) => {
+                console.log('Successfully joined session room:', data);
+            });
+            
+            // Start local media
+            startLocalMedia();
+        });
+        
+        // Function to check browser compatibility before starting media
+        function checkBrowserCompatibility() {
+            // Check if running in secure context (HTTPS or localhost)
+            if (window.isSecureContext === false) {
+                console.error('Not running in secure context. WebRTC requires HTTPS.');
+                mediaError.querySelector('h3').textContent = 'خطأ في الاتصال الآمن';
+                mediaError.querySelector('p').textContent = 'يتطلب الوصول إلى الكاميرا والميكروفون اتصالاً آمناً (HTTPS). يرجى استخدام HTTPS للوصول إلى هذه الصفحة.';
+                mediaError.classList.remove('hidden');
+                return false;
+            }
+            
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error('getUserMedia not supported in this browser');
+                mediaError.querySelector('h3').textContent = 'المتصفح غير مدعوم';
+                mediaError.querySelector('p').textContent = 'متصفحك لا يدعم مكالمات الفيديو. يرجى استخدام متصفح حديث مثل Chrome أو Firefox أو Edge.';
+                mediaError.classList.remove('hidden');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Handle user joining the session
+        socket.on('user-joined-session', (data) => {
+            console.log(`User joined session: ${JSON.stringify(data)}`);
+            updateConnectionStatus('connecting', 'جاري الاتصال بالمشارك الآخر...');
+            
+            // If this is the psychologist, and an employee joined, initiate the call
+            if (userRole === 'psychologist' && data.userRole === 'employee') {
+                console.log('Employee joined - psychologist will initiate the call');
+                setTimeout(() => {
+                    webrtc.initiateCall();
+                }, 1000);
+            }
+        });
+        
+        // Handle user leaving the session
+        socket.on('user-left-session', (data) => {
+            console.log(`User left session: ${JSON.stringify(data)}`);
+            
+            // Show waiting state when the other participant leaves
+            updateConnectionStatus('waiting', 'في انتظار المشارك الآخر...');
+            remoteVideoEl.classList.add('hidden');
+            remoteVideoContainer.classList.remove('hidden');
+            
+            // Reset the container with waiting message
+            remoteVideoContainer.innerHTML = `
+                <div class="text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <p class="mt-4 text-gray-300">في انتظار المشارك الآخر...</p>
+                </div>
+            `;
+            
+            // Clean up WebRTC connection but keep local stream active
+            webrtc.endCall(false);
+        });
+        
+        // Function to start local media with error handling
+        function startLocalMedia() {
+            // First check browser compatibility
+            if (!checkBrowserCompatibility()) {
+                return;
+            }
+            
+            // Show loading state
+            updateConnectionStatus('waiting', 'جاري الوصول إلى الكاميرا والميكروفون...');
+            
+            // Request permissions explicitly
+            navigator.permissions.query({name: 'camera'}).then(permissionStatus => {
+                console.log('Camera permission status:', permissionStatus.state);
+                
+                webrtc.startLocalStream().then(success => {
+                    if (success) {
+                        // Hide error message if it was shown
+                        mediaError.classList.add('hidden');
+                        updateConnectionStatus('waiting', 'في انتظار المشارك الآخر');
+                        
+                        // If psychologist, initiate call when ready
+                        if (userRole === 'psychologist') {
+                            setTimeout(() => {
+                                webrtc.initiateCall();
+                            }, 1000);
+                        }
+                    } else {
+                        // Show error message
+                        mediaError.classList.remove('hidden');
+                        updateConnectionStatus('error', 'فشل في الوصول إلى الكاميرا أو الميكروفون');
+                    }
+                }).catch(error => {
+                    console.error('Media error:', error);
+                    // Show error message with specific error details
+                    mediaError.classList.remove('hidden');
+                    
+                    // Customize error message based on error type
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        mediaError.querySelector('h3').textContent = 'تم رفض الإذن';
+                        mediaError.querySelector('p').textContent = 'لقد رفضت إذن الوصول إلى الكاميرا أو الميكروفون. يرجى السماح بالوصول من إعدادات المتصفح.';
+                    } else if (error.name === 'NotFoundError') {
+                        mediaError.querySelector('h3').textContent = 'لم يتم العثور على الكاميرا أو الميكروفون';
+                        mediaError.querySelector('p').textContent = 'تأكد من توصيل الكاميرا والميكروفون بشكل صحيح بجهازك.';
+                    } else if (error.name === 'NotReadableError' || error.name === 'AbortError') {
+                        mediaError.querySelector('h3').textContent = 'الكاميرا أو الميكروفون قيد الاستخدام';
+                        mediaError.querySelector('p').textContent = 'الكاميرا أو الميكروفون قيد الاستخدام من قبل تطبيق آخر. يرجى إغلاق التطبيقات الأخرى التي قد تستخدم الكاميرا أو الميكروفون.';
+                    }
+                    
+                    updateConnectionStatus('error', 'فشل في الوصول إلى الكاميرا أو الميكروفون');
+                });
+            }).catch(error => {
+                console.error('Permission query error:', error);
+                // Fallback if permissions API fails
+                startLocalStreamDirect();
+            });
+        }
+        
+        // Fallback function if permissions API is not available
+        function startLocalStreamDirect() {
+            webrtc.startLocalStream().then(success => {
+                if (success) {
+                    mediaError.classList.add('hidden');
+                    updateConnectionStatus('waiting', 'في انتظار المشارك الآخر');
+                    if (userRole === 'psychologist') {
+                        setTimeout(() => webrtc.initiateCall(), 1000);
+                    }
+                } else {
+                    mediaError.classList.remove('hidden');
+                    updateConnectionStatus('error', 'فشل في الوصول إلى الكاميرا أو الميكروفون');
+                }
+            }).catch(error => {
+                console.error('Direct media error:', error);
+                mediaError.classList.remove('hidden');
+                updateConnectionStatus('error', 'فشل في الوصول إلى الكاميرا أو الميكروفون');
+            });
+        }
+        
+        // Add retry button functionality
+        retryMediaBtn.addEventListener('click', () => {
+            startLocalMedia();
+        });
+        
+        // Handle chat messages
+        socket.on('new-session-message', (data) => {
+            addChatMessage({
+                userId: data.senderId,
+                text: data.message,
+                timestamp: data.timestamp,                
+            });
+        });
+        
+        function addChatMessage(message) {
+            const messageElement = document.createElement('div');
+            
+            // Format the timestamp if not already formatted
+            let displayTime = message.formattedTime || formatTime(message.timestamp);
+            
+            if (message.userId === userId) {
+                messageElement.classList.add('flex', 'justify-end', 'mb-2');
+                messageElement.innerHTML = `
+                    <div class="bg-primary text-white rounded-lg py-2 px-4 max-w-xs break-words">
+                        <p>${message.text}</p>
+                        <p class="text-xs text-right mt-1 opacity-70">${displayTime}</p>
+                    </div>
+                `;
+            } else {
+                messageElement.classList.add('flex', 'justify-start', 'mb-2');
+                messageElement.innerHTML = `
+                    <div class="bg-gray-200 rounded-lg py-2 px-4 max-w-xs break-words">
+                        <p>${message.text}</p>
+                        <p class="text-xs text-right mt-1 opacity-70">${displayTime}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Format timestamp for chat messages
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // UI event handlers
+        toggleAudioBtn.addEventListener('click', () => {
+            const enabled = webrtc.toggleAudio();
+            toggleAudioBtn.innerHTML = enabled ?
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>';
+        });
+        
+        toggleVideoBtn.addEventListener('click', () => {
+            const enabled = webrtc.toggleVideo();
+            toggleVideoBtn.innerHTML = enabled ?
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>';
+        });
+        
+        shareScreenBtn.addEventListener('click', () => {
+            webrtc.shareScreen().then(success => {
+                if (success) {
+                    shareScreenBtn.classList.remove('bg-gray-200');
+                    shareScreenBtn.classList.add('bg-blue-500');
+                    shareScreenBtn.querySelector('svg').classList.remove('text-gray-700');
+                    shareScreenBtn.querySelector('svg').classList.add('text-white');
+                }
+            });
+        });
+        
+        endCallBtn.addEventListener('click', () => {
+            Swal.fire({
+                title: 'إنهاء المكالمة',
+                text: 'هل أنت متأكد من رغبتك في إنهاء المكالمة؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'نعم، إنهاء المكالمة',
+                cancelButtonText: 'إلغاء',
+                customClass: {
+                    popup: 'rtl-swal'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    webrtc.endCall();
+                    socket.emit('end-call', { sessionId });
+                    
+                    Swal.fire({
+                        title: 'تم إنهاء المكالمة',
+                        text: 'سيتم توجيهك إلى صفحة الجلسات',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'rtl-swal'
+                        }
+                    }).then(() => {
+                        if (userRole === 'employee') {
+                            window.location.href = '/sessions/';
+                        } else {
+                            window.location.href = '/psychologist/sessions';
+                        }
+                    });
+                }
+            });
+        });
+        
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            
+            if (message) {
+                // Send message
+                socket.emit('session-message', {
+                    sessionId,
+                    senderId: userId,
+                    role: userRole,
+                    message
+                });
+                
+                // Clear input
+                chatInput.value = '';
+            }
+        });
+        
+        function updateConnectionStatus(status, text) {
+            const statusDiv = document.getElementById('connectionStatus');
+            const dot = statusDiv.querySelector('.rounded-full');
+            const label = statusDiv.querySelector('.text-sm');
+            
+            const statusColors = {
+                connecting: 'bg-yellow-500',
+                connected: 'bg-green-500',
+                disconnected: 'bg-red-500'
+            };
+            
+            dot.className = `h-2 w-2 rounded-full mr-2 ${statusColors[status]}`;
+            label.textContent = text;
+        }
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            socket.emit('leave-session', { sessionId, userId, userRole });
+            webrtc.endCall();
+        });
+        
+        // Handle visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // Re-join session when tab becomes visible
+                socket.emit('join-session', { sessionId, userId, userRole });
+            }
+        });
+    });
+</script>

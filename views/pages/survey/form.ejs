@@ -1,0 +1,293 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-800 mb-2">استبيان الضغط اليومي</h1>
+  <p class="text-gray-600">يرجى الإجابة على الأسئلة التالية لتقييم مستوى الضغط لديك اليوم</p>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert-error mb-6 animate__animated animate__fadeIn">
+    <div>
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span><%= error %></span>
+    </div>
+  </div>
+<% } %>
+
+<div class="card shadow-lg">
+  <div class="card-body">
+    <form action="/survey/submit" method="POST" id="survey-form" enctype="application/x-www-form-urlencoded">
+      <!-- Question 1 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">1. كم مرة شعرت بالتوتر أو القلق خلال الأسبوع الماضي؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer0" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">نادراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer0" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">أحياناً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer0" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer0" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">غالباً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer0" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">دائماً</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 2 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">2. هل واجهت صعوبة في الاسترخاء؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer1" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">لا على الإطلاق</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer1" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">قليلاً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer1" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer1" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">كثيراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer1" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل مستمر</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 3 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">3. كم مرة شعرت بالتعب أو نقص الطاقة؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer2" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">نادراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer2" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">أحياناً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer2" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer2" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">غالباً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer2" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">دائماً</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 4 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">4. هل واجهت صعوبة في التركيز على المهام؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer3" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">لا على الإطلاق</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer3" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">قليلاً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer3" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer3" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">كثيراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer3" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل مستمر</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 5 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">5. كم مرة شعرت بالإرهاق العاطفي أو العقلي؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer4" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">نادراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer4" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">أحياناً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer4" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer4" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">غالباً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer4" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">دائماً</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 6 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">6. هل واجهت صعوبة في النوم؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer5" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">لا على الإطلاق</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer5" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">قليلاً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer5" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer5" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">كثيراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer5" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل مستمر</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 7 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">7. كم مرة شعرت بالضغط من مواعيد نهائية أو أعباء العمل؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer6" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">نادراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer6" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">أحياناً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer6" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer6" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">غالباً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer6" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">دائماً</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 8 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">8. هل واجهت صعوبة في التعامل مع المواقف الصعبة أو المحادثات الصعبة؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer7" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">لا على الإطلاق</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer7" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">قليلاً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer7" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer7" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">كثيراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer7" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل مستمر</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 9 -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">9. كم مرة شعرت بالقلق بشأن صحتك البدنية أو العقلية؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer8" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">نادراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer8" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">أحياناً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer8" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer8" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">غالباً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer8" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">دائماً</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Question 10 -->
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-3">10. هل واجهت صعوبة في الحفاظ على التوازن بين العمل والحياة الشخصية؟</h3>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center">
+            <input type="radio" name="answer9" value="1" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" required>
+            <span class="mr-2">لا على الإطلاق</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer9" value="2" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">قليلاً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer9" value="3" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل معتدل</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer9" value="4" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">كثيراً</span>
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="answer9" value="5" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <span class="mr-2">بشكل مستمر</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex justify-center">
+        <button type="submit" class="btn-primary py-2 px-8 rounded-md text-lg">إرسال الاستبيان</button>
+      </div>
+    </form>
+  </div>
+</div>

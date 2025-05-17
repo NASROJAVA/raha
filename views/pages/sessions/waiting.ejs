@@ -1,0 +1,184 @@
+<%- contentFor('title') %>
+انتظار بدء الجلسة | راحة
+
+<%- contentFor('body') %>
+<div class="flex flex-col min-h-screen bg-gray-100">
+  <!-- Header -->
+  <div class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">انتظار بدء الجلسة</h1>
+    <div class="flex items-center space-x-2">
+      <button id="refresh-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 ml-2">
+        تحديث
+      </button>
+    </div>
+  </div>
+  
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
+      <div class="text-6xl text-blue-500 mb-4">
+        <i class="fas fa-clock"></i>
+      </div>
+      
+      <h2 class="text-2xl font-semibold mb-4">الجلسة ستبدأ قريبًا</h2>
+      
+      <!-- Current Time Display with Algeria (UTC+1) Timezone -->
+      <div class="bg-gray-50 px-4 py-2 rounded-lg mb-4">
+        <p class="text-sm text-gray-600 mb-1">الوقت الحالي <span class="text-xs">(توقيت الجزائر UTC+1)</span>:</p>
+        <p id="current-time" class="text-lg font-semibold text-gray-800">--:--</p>
+      </div>
+      
+      <% if (typeof minutesToStart !== 'undefined' && minutesToStart > 0) { %>
+        <p class="text-lg mb-6">
+          مدة الانتظار: <span id="countdown" class="font-bold text-blue-600"><%= minutesToStart %></span> دقيقة
+        </p>
+      <% } else { %>
+        <p class="text-lg mb-6">
+          الجلسة ستبدأ في الوقت المحدد
+        </p>
+      <% } %>
+      
+      <div class="p-4 bg-gray-100 rounded-lg mb-6">
+        <h3 class="font-semibold mb-2">تفاصيل الجلسة:</h3>
+        <p>التاريخ: <% try { %>
+                                <% const sessionDate = session.session_date || session.date; %>
+                                <%= new Date(sessionDate).toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            <% } catch (e) { %>
+                                <%= session.session_date || session.date %>
+                            <% } %>
+        </p>
+        
+        <p>الوقت: <% 
+          // Format time to be more readable without timezone adjustments
+          function formatTime(time) {
+            if (!time) return 'غير محدد';
+            
+            // Parse hours and minutes from time format
+            const parts = time.split(':');
+            if (parts.length < 2) return time; // Return as is if not in proper format
+            
+            let hours = parseInt(parts[0]);
+            const minutes = parts.length > 1 ? parts[1].padStart(2, '0') : '00';
+            
+            // Determine period and convert to 12-hour format
+            const period = hours >= 12 ? 'مساءً' : 'صباحاً';
+            hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+            
+            return `${hours}:${minutes} ${period}`;
+          }
+        %>
+        <%= formatTime(session.start_time) %> - <%= formatTime(session.end_time) %>
+        </p>
+        
+        <p>التنبيه: <span class="text-gray-500 text-xs">توقيت الجزائر (UTC+1)</span></p>
+        
+        <% if (user.role === 'employee') { %>
+          <p>المختص: <%= session.psychologist_name || 'اخصائي' %></p>
+        <% } else if (user.role === 'psychologist') { %>
+          <p>الموظف: <%= session.employee_name || 'موظف' %></p>
+        <% } %>
+      </div>
+      
+      <% if (typeof minutesToStart !== 'undefined' && minutesToStart <= 5) { %>
+        <button id="join-now-btn" class="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 text-lg">
+          الانضمام للجلسة الآن
+        </button>
+      <% } else { %>
+        <p class="text-gray-600">
+          يمكنك الانضمام للجلسة قبل 5 دقائق من موعدها المحدد
+        </p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const refreshBtn = document.getElementById('refresh-btn');
+  const joinNowBtn = document.getElementById('join-now-btn');
+  const countdownEl = document.getElementById('countdown');
+  const currentTimeEl = document.getElementById('current-time');
+  
+  // Format time function for the current time display
+  function formatCurrentTime() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    
+    // Convert to 12-hour format with Arabic AM/PM indicator
+    const period = hours >= 12 ? 'مساءً' : 'صباحاً';
+    const hours12 = hours % 12 || 12;
+    
+    // Format with padding
+    return `${hours12}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`;
+  }
+  
+  // Update the current time display
+  function updateCurrentTime() {
+    if (currentTimeEl) {
+      currentTimeEl.textContent = formatCurrentTime();
+    }
+  }
+  
+  // Update time immediately and then every second
+  updateCurrentTime();
+  const timeUpdateInterval = setInterval(updateCurrentTime, 1000);
+  
+  // Auto refresh the page every minute
+  const autoRefreshInterval = setInterval(() => {
+    location.reload();
+  }, 60000);
+  
+  // Manual refresh
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      location.reload();
+    });
+  }
+  
+  // Join session button
+  if (joinNowBtn) {
+    joinNowBtn.addEventListener('click', function() {
+      window.location.href = '/sessions/join/<%= session.id %>';
+    });
+  }
+  
+  // Countdown timer
+  // Using a safer way to get minutesToStart value
+  let minutesLeft;
+  <% 
+    // Calculate minutes within EJS tags to avoid JavaScript linting errors
+    if (minutesToStart && Number.isInteger(minutesToStart)) { 
+      minutesLeft = minutesToStart; 
+    } else { 
+      minutesLeft = 0; 
+    } 
+  %>
+  minutesLeft = <%= minutesLeft %>;
+  
+  // Set up countdown if element exists and we have minutes to count down
+  if (countdownEl && minutesLeft > 0) {
+    let intervalId = setInterval(() => {
+      minutesLeft--;
+      countdownEl.textContent = minutesLeft;
+      
+      if (minutesLeft <= 0) {
+        clearInterval(intervalId);
+        location.reload();
+      }
+    }, 60000); // Update every minute
+  }
+  
+  // Clean up intervals on page unload
+  window.addEventListener('beforeunload', () => {
+    clearInterval(autoRefreshInterval);
+    clearInterval(timeUpdateInterval);
+    
+    // Also clear the countdown interval if it exists
+    if (typeof intervalId !== 'undefined') {
+      clearInterval(intervalId);
+    }
+  });
+});
+</script>

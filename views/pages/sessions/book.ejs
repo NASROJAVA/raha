@@ -1,0 +1,372 @@
+<!-- Header is already included in the main layout -->
+
+<style>
+    /* Time slot selection styles */
+    .time-slot {
+        transition: all 0.2s ease;
+    }
+    
+    .time-slot:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .time-slot.selected {
+        background-color: var(--color-primary, #4caf50);
+        color: white;
+        border-color: var(--color-primary-dark, #388e3c);
+    }
+    
+    /* Animation for the loading spinner */
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="/sessions" class="flex items-center text-primary hover:text-primary-dark transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            العودة إلى الجلسات
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">حجز جلسة</h1>
+            
+            <form action="/sessions/book" method="POST" id="bookingForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label for="psychologist" class="block text-sm font-medium text-gray-700 mb-1">اختر معالج نفسي *</label>
+                        <select id="psychologist" name="psychologistId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                            <option value="">اختر معالج نفسي</option>
+                            <% psychologists.forEach(psychologist => { %>
+                                <option value="<%= psychologist.id %>" data-specialties="<%= JSON.stringify(psychologist.specialties) %>">
+                                    <%= psychologist.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div id="psychologistInfo" class="md:col-span-2 bg-gray-50 p-4 rounded-lg hidden">
+                        <div class="flex items-start">
+                            <img id="psychologistAvatar" src="/images/default-avatar.png" alt="Psychologist" class="w-16 h-16 rounded-full mr-4">
+                            <div>
+                                <h3 id="psychologistName" class="text-lg font-medium text-gray-800"></h3>
+                                <p id="psychologistSpecialties" class="text-sm text-gray-600 mt-1"></p>
+                                <p id="psychologistBio" class="text-sm text-gray-600 mt-2"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="sessionType" class="block text-sm font-medium text-gray-700 mb-1">نوع الجلسة *</label>
+                        <select id="sessionType" name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                            <option value="video">جلسة فيديو</option>
+                            <option value="in-person">جلسة شخصية</option>
+                            <option value="chat">جلسة دردشة</option>
+                        </select>
+                    </div>
+
+                    <div id="locationContainer" class="hidden">
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">الموقع *</label>
+                        <input type="text" id="location" name="location" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="أدخل موقع الجلسة الشخصية">
+                    </div>
+
+                    <div>
+                        <label for="sessionDate" class="block text-sm font-medium text-gray-700 mb-1">التاريخ *</label>
+                        <input type="date" id="sessionDate" name="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required min="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+
+                    <div>
+                        <label for="sessionTime" class="block text-sm font-medium text-gray-700 mb-1">الوقت *</label>
+                        <div id="timeSlotContainer" class="border border-gray-300 rounded-md p-3 bg-gray-50 hidden">
+                            <div id="timeSlotLoader" class="flex justify-center items-center py-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                <span class="mr-3 text-gray-700">جاري تحميل الأوقات المتاحة...</span>
+                            </div>
+                            <div id="noTimeSlotsMessage" class="text-center py-4 hidden">
+                                <p class="text-gray-700">لا توجد أوقات متاحة في هذا التاريخ</p>
+                                <p class="text-sm text-gray-500 mt-1">يرجى اختيار تاريخ آخر</p>
+                            </div>
+                            <div id="timeSlotGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2 hidden">
+                                <!-- Time slots will be inserted here dynamically -->
+                            </div>
+                        </div>
+                        <input type="hidden" id="sessionTime" name="timeSlot" required>
+                        <input type="hidden" id="sessionStartTime" name="startTime">
+                        <input type="hidden" id="sessionEndTime" name="endTime">
+                        <p class="text-sm text-gray-500 mt-1">ستظهر الأوقات المتاحة بعد اختيار التاريخ والمعالج النفسي</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="sessionTitle" class="block text-sm font-medium text-gray-700 mb-1">عنوان الجلسة *</label>
+                        <input type="text" id="sessionTitle" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required placeholder="مثال: استشارة أولية، جلسة متابعة">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="sessionDescription" class="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+                        <textarea id="sessionDescription" name="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="صف باختصار ما ترغب في مناقشته في هذه الجلسة"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary-dark transition duration-300">
+                            حجز الجلسة
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const psychologistSelect = document.getElementById('psychologist');
+        const sessionTypeSelect = document.getElementById('sessionType');
+        const locationContainer = document.getElementById('locationContainer');
+        const locationInput = document.getElementById('location');
+        const sessionDateInput = document.getElementById('sessionDate');
+        const sessionTimeInput = document.getElementById('sessionTime');
+        const timeSlotContainer = document.getElementById('timeSlotContainer');
+        const timeSlotLoader = document.getElementById('timeSlotLoader');
+        const noTimeSlotsMessage = document.getElementById('noTimeSlotsMessage');
+        const timeSlotGrid = document.getElementById('timeSlotGrid');
+        const psychologistInfo = document.getElementById('psychologistInfo');
+        const psychologistAvatar = document.getElementById('psychologistAvatar');
+        const psychologistName = document.getElementById('psychologistName');
+        const psychologistSpecialties = document.getElementById('psychologistSpecialties');
+        const psychologistBio = document.getElementById('psychologistBio');
+
+        // Show/hide location field based on session type
+        sessionTypeSelect.addEventListener('change', function() {
+            if (this.value === 'in-person') {
+                locationContainer.classList.remove('hidden');
+                locationInput.setAttribute('required', 'required');
+            } else {
+                locationContainer.classList.add('hidden');
+                locationInput.removeAttribute('required');
+            }
+        });
+
+        // Show psychologist info when selected
+        psychologistSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Fetch psychologist details and display them
+                const selectedOption = this.options[this.selectedIndex];
+                const specialties = JSON.parse(selectedOption.dataset.specialties || '[]');
+                
+                psychologistName.textContent = selectedOption.text;
+                psychologistSpecialties.textContent = specialties.join(', ');
+                
+                // Fetch detailed psychologist information from the server
+                fetch(`/api/psychologists/${this.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        psychologistAvatar.src = data.avatar || '/images/default-avatar.png';
+                        psychologistBio.textContent = data.bio || '';
+                        psychologistInfo.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching psychologist details:', error);
+                    });
+                
+                // Enable date selection
+                sessionDateInput.disabled = false;
+                
+                // Reset time selection if psychologist changes
+                sessionTimeInput.value = '';
+                hideTimeSlotUI();
+            } else {
+                psychologistInfo.classList.add('hidden');
+                hideTimeSlotUI();
+            }
+        });
+
+        // Handle date selection to show available time slots
+        sessionDateInput.addEventListener('change', function() {
+            // Reset time selection when date changes
+            sessionTimeInput.value = '';
+            
+            if (this.value && psychologistSelect.value) {
+                // Show the time slot container and loader
+                timeSlotContainer.classList.remove('hidden');
+                timeSlotLoader.classList.remove('hidden');
+                timeSlotGrid.classList.add('hidden');
+                noTimeSlotsMessage.classList.add('hidden');
+                
+                // Fetch available time slots from the server
+                fetch(`/sessions/api/sessions/available-slots?psychologistId=${psychologistSelect.value}&date=${this.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide loader
+                        timeSlotLoader.classList.add('hidden');
+                        
+                        // Clear existing time slots
+                        timeSlotGrid.innerHTML = '';
+                        
+                        if (data.slots && data.slots.length > 0) {
+                    // Show time slot grid and add available slots
+                    timeSlotGrid.classList.remove('hidden');
+                    noTimeSlotsMessage.classList.add('hidden');
+                    
+                    // Get current time in same format as slots
+                    const now = new Date();
+                    const currentHour = now.getHours().toString().padStart(2, '0');
+                    const currentMinute = now.getMinutes().toString().padStart(2, '0');
+                    const currentTime = `${currentHour}:${currentMinute}`;
+                    
+                    // Filter out past time slots
+                    const futureSlots = data.slots.filter(slot => {
+                        return slot.startTime > currentTime;
+                    });
+                    
+                    // If no future slots available, show message
+                    if (futureSlots.length === 0) {
+                        noTimeSlotsMessage.innerHTML = `
+                            <p class="text-gray-700">لا توجد أوقات متاحة بعد الوقت الحالي</p>
+                            <p class="text-sm text-gray-500 mt-1">الوقت الحالي: ${currentTime}</p>
+                        `;
+                        noTimeSlotsMessage.classList.remove('hidden');
+                        timeSlotGrid.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Sort future slots by start time
+                    futureSlots.sort((a, b) => {
+                        return a.startTime.localeCompare(b.startTime);
+                    });
+                    
+                    // Add available future time slots
+                            futureSlots.forEach(slot => {
+                                const timeSlot = document.createElement('div');
+                                timeSlot.className = 'time-slot bg-white border border-gray-300 rounded p-2 text-center cursor-pointer hover:bg-gray-100 transition duration-200';
+                                timeSlot.dataset.id = slot.id;
+                                timeSlot.dataset.startTime = slot.startTime;
+                                timeSlot.dataset.endTime = slot.endTime;
+                                
+                                // Format time to be more readable
+                                const formattedStartTime = formatTime(slot.startTime);
+                                const formattedEndTime = formatTime(slot.endTime);
+                                
+                                timeSlot.innerHTML = `
+                                    <div class="text-sm font-medium text-gray-800">${formattedStartTime}</div>
+                                    <div class="text-xs text-gray-500">إلى ${formattedEndTime}</div>
+                                `;
+                                
+                                // Add click event to select this time slot
+                                timeSlot.addEventListener('click', function() {
+                                    // Remove selected class from all time slots
+                                    document.querySelectorAll('.time-slot').forEach(el => {
+                                        el.classList.remove('bg-primary', 'text-white');
+                                        el.classList.add('bg-white');
+                                        el.querySelectorAll('div').forEach(child => {
+                                            child.classList.remove('text-white');
+                                        });
+                                    });
+                                    
+                                    // Add selected class to this time slot
+                                    this.classList.remove('bg-white');
+                                    this.classList.add('bg-primary', 'text-white');
+                                    this.querySelectorAll('div').forEach(child => {
+                                        child.classList.add('text-white');
+                                    });
+                                    
+                                    // Set the hidden input values
+                                    sessionTimeInput.value = this.dataset.id;
+                                    
+                                    // Store the original raw time values (not the formatted ones)
+                                    const startTimeField = document.getElementById('sessionStartTime');
+                                    const endTimeField = document.getElementById('sessionEndTime');
+                                    
+                                    startTimeField.value = this.dataset.startTime;
+                                    endTimeField.value = this.dataset.endTime;
+                                    
+                                    console.log('Selected time slot:', {
+                                        id: this.dataset.id,
+                                        startTime: this.dataset.startTime,
+                                        endTime: this.dataset.endTime
+                                    });
+                                });
+                                
+                                timeSlotGrid.appendChild(timeSlot);
+                            });
+                        } else {
+                            // Show no slots message
+                            noTimeSlotsMessage.classList.remove('hidden');
+                            timeSlotGrid.classList.add('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching available time slots:', error);
+                        // Show error message
+                        timeSlotLoader.classList.add('hidden');
+                        noTimeSlotsMessage.classList.remove('hidden');
+                        noTimeSlotsMessage.querySelector('p').textContent = 'حدث خطأ أثناء تحميل الأوقات المتاحة';
+                        timeSlotGrid.classList.add('hidden');
+                    });
+            } else {
+                hideTimeSlotUI();
+            }
+        });
+        
+        // Helper function to hide time slot UI components
+        function hideTimeSlotUI() {
+            timeSlotContainer.classList.add('hidden');
+            timeSlotLoader.classList.add('hidden');
+            noTimeSlotsMessage.classList.add('hidden');
+            timeSlotGrid.classList.add('hidden');
+        }
+        
+        // Helper function to format time (convert 24h to 12h format) using system's local time
+        function formatTime(time24h) {
+            // If time is already in a good format, return it as is
+            if (time24h.includes('صباحاً') || time24h.includes('مساءً')) {
+                return time24h;
+            }
+            
+            // Parse hours and minutes from 24-hour format
+            const [hours, minutes] = time24h.split(':').map(Number);
+            
+            // Determine AM/PM and convert hours to 12-hour format
+            const period = hours >= 12 ? 'مساءً' : 'صباحاً';
+            const hours12 = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+            
+            // Format the time in Arabic style
+            return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+
+        // Form validation
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            // Validate in-person session location
+            if (sessionTypeSelect.value === 'in-person' && !locationInput.value.trim()) {
+                event.preventDefault();
+                alert('الرجاء إدخال موقع للجلسة الشخصية');
+                return;
+            }
+            
+            // Validate time slot selection
+            if (!sessionTimeInput.value) {
+                event.preventDefault();
+                alert('الرجاء اختيار وقت متاح للجلسة');
+                return;
+            }
+        });
+    });
+</script>
+
+<!-- Footer is already included in the main layout -->

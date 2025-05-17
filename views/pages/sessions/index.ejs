@@ -1,0 +1,428 @@
+<div class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Header with Stats -->
+        <div class="bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2"><%- __('My Sessions') %></h1>
+                    <p class="text-white text-opacity-90"><%- __('Manage your therapy sessions and appointments') %></p>
+                </div>
+                <a href="/sessions/book" class="mt-4 md:mt-0 bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-medium shadow-md transition duration-300 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <%- __('Book New Session') %>
+                </a>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="bg-white p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="mr-4">
+                            <p class="text-sm text-white text-opacity-80"><%- __('Upcoming Sessions') %></p>
+                            <p class="text-2xl font-bold"><%= upcomingSessions ? upcomingSessions.length : 0 %></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="bg-white p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="mr-4">
+                            <p class="text-sm text-white text-opacity-80"><%- __('Completed Sessions') %></p>
+                            <p class="text-2xl font-bold"><%= pastSessions ? pastSessions.filter(s => s.status === 'completed').length : 0 %></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="bg-white p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </div>
+                        <div class="mr-4">
+                            <p class="text-sm text-white text-opacity-80"><%- __('Average Rating') %></p>
+                            <p class="text-2xl font-bold">
+                                <% 
+                                    const completedWithRating = pastSessions ? pastSessions.filter(s => s.rating) : [];
+                                    const avgRating = completedWithRating.length ? 
+                                        completedWithRating.reduce((sum, s) => sum + (s.rating || 0), 0) / completedWithRating.length : 0;
+                                %>
+                                <%= avgRating.toFixed(1) %>/5
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs for Upcoming and Past Sessions -->
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex">
+                    <button id="upcoming-tab" class="tab-button active-tab">
+                        <%- __('Upcoming Sessions') %>
+                        <span class="bg-primary text-white text-xs rounded-full px-2 py-1 mr-2"><%= upcomingSessions ? upcomingSessions.length : 0 %></span>
+                    </button>
+                    <button id="past-tab" class="tab-button">
+                        <%- __('Past Sessions') %>
+                        <span class="bg-gray-400 text-white text-xs rounded-full px-2 py-1 mr-2"><%= pastSessions ? pastSessions.length : 0 %></span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Upcoming Sessions Section -->
+        <div id="upcoming-sessions" class="tab-content">
+            <% if (upcomingSessions && upcomingSessions.length > 0) { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% upcomingSessions.forEach(session => { %>
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                            <!-- Session Status Badges -->
+                            <div class="flex justify-between items-center">
+                                
+                                <!-- Real-time Status -->
+                                <%
+                                    // Calculate session status with careful validation
+                                    var sessionActiveStatus = 'upcoming';
+                                    var statusText = __('Upcoming');
+                                    var statusClass = 'bg-blue-100 text-blue-800';
+                                    
+                                    try {
+                                        // Calculate session time using system's local time
+                                        const sessionDate = new Date(session.session_date || Date.now());
+                                        
+                                        // Safely handle potentially undefined or non-string start/end times
+                                        let startHour = 0, startMinute = 0;
+                                        let endHour = 0, endMinute = 0;
+                                        
+                                        if (session.start_time && typeof session.start_time === 'string') {
+                                            const startTimeParts = session.start_time.split(':');
+                                            startHour = parseInt(startTimeParts[0] || 0);
+                                            startMinute = parseInt(startTimeParts[1] || 0);
+                                        }
+                                        
+                                        if (session.end_time && typeof session.end_time === 'string') {
+                                            const endTimeParts = session.end_time.split(':');
+                                            endHour = parseInt(endTimeParts[0] || 0);
+                                            endMinute = parseInt(endTimeParts[1] || 0);
+                                        }
+                                        
+                                        // Set hours and minutes
+                                        const sessionStartDate = new Date(sessionDate);
+                                        sessionStartDate.setHours(startHour, startMinute, 0);
+                                        const sessionStart = sessionStartDate;
+                                        
+                                        const sessionEndDate = new Date(sessionDate);
+                                        sessionEndDate.setHours(endHour, endMinute, 0);
+                                        const sessionEnd = sessionEndDate;
+                                        
+                                        // Create a proper current date in Algeria time (UTC+1)
+                                        // This creates a date object with the current time that will be used for comparisons
+                                        // Use system's local time for all date/time operations
+                                        const now = new Date();
+                                        // We don't need any timezone adjustments because:
+                                        // 1. Session times in the database are now treated as local time
+                                        // 2. The session date objects created above use the system's local time
+                                        
+                                        // Force comparison using time strings if date object comparison fails
+                                        const nowTime = now.getHours() * 60 + now.getMinutes();
+                                        const startTime = startHour * 60 + startMinute;
+                                        const endTime = endHour * 60 + endMinute;
+                                        const sameDay = now.toDateString() === sessionStart.toDateString();
+                                        const isActiveByTime = sameDay && nowTime >= startTime && nowTime <= endTime;
+                                        
+                                        // Use both comparisons
+                                        const isActive = (now >= sessionStart && now <= sessionEnd) || isActiveByTime;
+                                        const isPast = now > sessionEnd;
+                                        
+                                        if (isActive) {
+                                            sessionActiveStatus = 'active';
+                                            statusText = __('Active Now');
+                                            statusClass = 'bg-green-100 text-green-800';
+                                        } else if (isPast) {
+                                            sessionActiveStatus = 'past';
+                                            statusText = __('Ended');
+                                            statusClass = 'bg-gray-100 text-gray-800';
+                                        }
+                                    } catch (error) {
+                                        console.error('Error calculating session status:', error);
+                                    }
+                                %>
+                                
+                                <div class="<%= statusClass %> text-xs px-2 py-1 rounded-full font-medium ml-2" data-status="<%= sessionActiveStatus %>">
+                                    <%= statusText %>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6">
+                                <!-- Session Title and Type -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-1"><%= session.title %></h3>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                        <%= session.type === 'video' ? __('Video') : __('In Person') %>
+                                    </span>
+                                </div>
+                                
+                                <!-- Psychologist Info -->
+                                <div class="flex items-center mb-4">
+                                    <% if (session.psychologist) { %>
+                                        <img src="<%= session.psychologist.avatar || '/images/default-avatar.png' %>" alt="<%= session.psychologist.name %>" class="w-12 h-12 rounded-full border-2 border-primary mr-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700"><%= session.psychologist.name %></p>
+                                            <p class="text-xs text-gray-500"><%- __('Psychologist') %></p>
+                                        </div>
+                                    <% } else { %>
+                                        <img src="/images/default-avatar.png" alt="Psychologist" class="w-12 h-12 rounded-full border-2 border-primary mr-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700"><%- __('Psychologist') %></p>
+                                            <p class="text-xs text-gray-500"><%- __('Therapist') %></p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                
+                                <!-- Session Details -->
+                                <div class="space-y-2 mb-5">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <%= new Date(session.session_date).toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <%= session.start_time %> - <%= session.end_time %> (<%= session.duration %> <%- __('minutes') %>)
+                                    </div>
+                                    <% if (session.location) { %>
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <%= session.location %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex justify-between mt-4">
+                                    <a href="/sessions/<%= session.id %>" class="text-primary hover:text-primary-dark text-sm font-medium flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <%- __('View Details') %>
+                                    </a>
+                                    <% if (session.type === 'video') { %>
+                                        <a href="/sessions/<%= session.id %>/join" class="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                            <%- __('Join Session') %>
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="bg-white rounded-xl shadow-md p-8 text-center">
+                    <div class="bg-gray-100 inline-block p-4 rounded-full mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2"><%- __('No Upcoming Sessions') %></h3>
+                    <p class="text-gray-500 mb-6 max-w-md mx-auto"><%- __('You haven\'t booked any sessions yet. Schedule a session with one of our psychologists.') %></p>
+                    <a href="/sessions/book" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium shadow-md transition duration-300 inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <%- __('Book a Session') %>
+                    </a>
+                </div>
+            <% } %>
+        </div>
+        
+        <!-- Past Sessions Section -->
+        <div id="past-sessions" class="tab-content hidden">
+            <% if (pastSessions && pastSessions.length > 0) { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% pastSessions.forEach(session => { %>
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                            <!-- Session Status Badges -->
+                            <div class="flex justify-between items-center">
+                                <!-- Administrative Status -->
+                                <div class="<%= session.status === 'completed' ? 'bg-blue-500' : (session.status === 'cancelled' ? 'bg-red-500' : 'bg-yellow-500') %> text-white text-xs uppercase font-bold tracking-wider py-1 px-3">
+                                    <%= session.status === 'completed' ? __('Completed') : (session.status === 'cancelled' ? __('Cancelled') : __('No Show')) %>
+                                </div>
+                                
+                                <!-- Always show 'Ended' for past sessions -->
+                                <div class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full font-medium ml-2" data-status="past">
+                                    <%= __('Ended') %>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6">
+                                <!-- Session Title and Rating -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-1"><%= session.title %></h3>
+                                    <% if (session.rating) { %>
+                                        <div class="flex items-center">
+                                            <% for(let i = 0; i < 5; i++) { %>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 <%= i < session.rating ? 'text-yellow-400' : 'text-gray-300' %>" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                
+                                <!-- Psychologist Info -->
+                                <div class="flex items-center mb-4">
+                                    <% if (session.psychologist) { %>
+                                        <img src="<%= session.psychologist.avatar || '/images/default-avatar.png' %>" alt="<%= session.psychologist.name %>" class="w-12 h-12 rounded-full border-2 border-gray-200 mr-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700"><%= session.psychologist.name %></p>
+                                            <p class="text-xs text-gray-500"><%- __('Psychologist') %></p>
+                                        </div>
+                                    <% } else { %>
+                                        <img src="/images/default-avatar.png" alt="Psychologist" class="w-12 h-12 rounded-full border-2 border-gray-200 mr-3">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700"><%- __('Psychologist') %></p>
+                                            <p class="text-xs text-gray-500"><%- __('Therapist') %></p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                
+                                <!-- Session Details -->
+                                <div class="space-y-2 mb-5">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <%= new Date(session.session_date).toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <%= session.start_time %> - <%= session.end_time %> (<%= session.duration %> <%- __('minutes') %>)
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                        <%= session.type === 'video' ? __('Video Session') : __('In-Person Session') %>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex justify-between mt-4">
+                                    <a href="/sessions/<%= session.id %>" class="text-primary hover:text-primary-dark text-sm font-medium flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <%- __('View Details') %>
+                                    </a>
+                                    <% if (session.status === 'completed' && !session.feedback) { %>
+                                        <a href="/sessions/<%= session.id %>/feedback" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded-lg transition duration-300 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                            </svg>
+                                            <%- __('Leave Feedback') %>
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="bg-white rounded-xl shadow-md p-8 text-center">
+                    <div class="bg-gray-100 inline-block p-4 rounded-full mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2"><%- __('No Past Sessions') %></h3>
+                    <p class="text-gray-500 mb-6 max-w-md mx-auto"><%- __('You haven\'t attended any sessions yet. Once you complete a session, it will appear here.') %></p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Add custom CSS for tabs -->
+<style>
+    .tab-button {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom-width: 2px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border-color: transparent;
+        color: #6b7280;
+    }
+    
+    .tab-button:hover {
+        color: #374151;
+        border-color: #d1d5db;
+    }
+    
+    .active-tab {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+    
+    .tab-content {
+        transition-property: opacity;
+        transition-duration: 300ms;
+    }
+    
+    .tab-content.hidden {
+        display: none;
+    }
+</style>
+
+<!-- Add JavaScript for tab functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const upcomingTab = document.getElementById('upcoming-tab');
+        const pastTab = document.getElementById('past-tab');
+        const upcomingSessions = document.getElementById('upcoming-sessions');
+        const pastSessions = document.getElementById('past-sessions');
+        
+        upcomingTab.addEventListener('click', function() {
+            upcomingTab.classList.add('active-tab');
+            pastTab.classList.remove('active-tab');
+            upcomingSessions.classList.remove('hidden');
+            pastSessions.classList.add('hidden');
+        });
+        
+        pastTab.addEventListener('click', function() {
+            pastTab.classList.add('active-tab');
+            upcomingTab.classList.remove('active-tab');
+            pastSessions.classList.remove('hidden');
+            upcomingSessions.classList.add('hidden');
+        });
+    });
+</script>

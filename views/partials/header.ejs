@@ -1,0 +1,223 @@
+<header class="bg-base-100 shadow-md sticky top-0 z-50 transition-all duration-300">
+  <div class="navbar container mx-auto px-4">
+    <!-- Logo Section -->
+    <div class="navbar-start">
+      <div class="dropdown">
+        <label tabindex="0" class="btn btn-ghost lg:hidden rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+          </svg>
+        </label>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-4 shadow-lg bg-base-100 rounded-xl w-60 rtl space-y-1">
+          <li><a href="/" class="<%= path === '/' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الرئيسية</a></li>
+          <% if (!user || user.role !== 'psychologist') { %>
+            <li><a href="/survey" class="<%= path.startsWith('/survey') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">استبيان الضغط</a></li>
+            <li><a href="/support" class="<%= path.startsWith('/support') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الدعم النفسي</a></li>
+            <li><a href="/sessions" class="<%= path.startsWith('/sessions') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الجلسات</a></li>
+          <% } %>
+          <li class="divider my-1"></li>
+          
+          <% if (user) { %>
+            <% if (user.role === 'employee') { %>
+              <li><a href="/dashboard" class="<%= path === '/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
+              <li><a href="/training" class="<%= path.startsWith('/training') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المواد التدريبية</a></li>
+              <li><a href="/community" class="<%= path.startsWith('/community') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المجتمع</a></li>
+            <% } else if (user.role === 'psychologist') { %>
+              <li><a href="/psychologist/dashboard" class="<%= path === '/psychologist/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
+              <li><a href="/psychologist/messages" class="<%= path.startsWith('/psychologist/messages') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الرسائل</a></li>
+              <li><a href="/psychologist/sessions" class="<%= path.startsWith('/psychologist/sessions') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الجلسات</a></li>
+              
+              <!-- Dropdown for other psychologist pages -->
+              <li class="dropdown">
+                <div tabindex="0" class="transition-all duration-200 rounded-lg hover:bg-primary/10 flex items-center p-2">
+                  <span>المزيد</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52">
+                  <li><a href="/psychologist/statistics" class="<%= path.startsWith('/psychologist/statistics') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الإحصائيات</a></li>
+                  <li><a href="/psychologist/availability" class="<%= path.startsWith('/psychologist/availability') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الجدول والمواعيد</a></li>
+                  <li><a href="/psychologist/feedback" class="<%= path.startsWith('/psychologist/feedback') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">التقييمات</a></li>
+                  <li><a href="/psychologist/profile" class="<%= path.startsWith('/psychologist/profile') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الملف الشخصي</a></li>
+                </ul>
+              </li>
+            <% } else if (user.role === 'admin') { %>
+              <li><a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
+              <li><a href="/admin/users" class="<%= path.startsWith('/admin/users') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المستخدمين</a></li>
+              <li><a href="/admin/content" class="<%= path.startsWith('/admin/content') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المحتوى</a></li>
+              <li><a href="/admin/statistics" class="<%= path.startsWith('/admin/statistics') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الإحصائيات</a></li>
+            <% } %>
+            <li class="divider my-1"></li>
+            <li><a href="/dashboard/profile" class="transition-all duration-200 rounded-lg hover:bg-primary/10">الملف الشخصي</a></li>
+            <li><a href="/dashboard/change-password" class="transition-all duration-200 rounded-lg hover:bg-primary/10">تغيير كلمة المرور</a></li>
+            <li><a href="/auth/logout" class="transition-all duration-200 rounded-lg hover:bg-error/10 text-error">تسجيل الخروج</a></li>
+          <% } else { %>
+            <li><a href="/auth/login" class="transition-all duration-200 rounded-lg hover:bg-primary/10">تسجيل الدخول</a></li>
+            <li><a href="/auth/register" class="transition-all duration-200 rounded-lg hover:bg-primary/10">إنشاء حساب</a></li>
+          <% } %>
+          <li class="divider my-1"></li>
+          <li>
+            <a class="transition-all duration-200 rounded-lg hover:bg-primary/10">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+              <span><%= currentLocale === 'ar' ? 'العربية' : 'English' %></span>
+            </a>
+            <ul class="p-2 bg-base-100 rounded-lg shadow-lg">
+              <li><a href="<%= `${req.path}?lang=ar` %>" class="<%= currentLocale === 'ar' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">العربية</a></li>
+              <li><a href="<%= `${req.path}?lang=en` %>" class="<%= currentLocale === 'en' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">English</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <a href="/" class="flex items-center space-x-2 space-x-reverse font-bold text-2xl text-primary">
+        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white text-xl">ر</div>
+        <span>راحة</span>
+      </a>
+    </div>
+    
+    <!-- Navigation Links (Desktop) -->
+    <div class="navbar-center hidden lg:flex">
+      <ul class="menu menu-horizontal px-2 rtl gap-1">
+        <li><a href="/" class="px-4 py-2 rounded-xl <%= path === '/' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 hover:bg-primary/10">الرئيسية</a></li>
+        <% if (!user || user.role !== 'psychologist') { %>
+          <li><a href="/survey" class="px-4 py-2 rounded-xl <%= path.startsWith('/survey') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 hover:bg-primary/10">استبيان الضغط</a></li>
+          <li><a href="/support" class="px-4 py-2 rounded-xl <%= path.startsWith('/support') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 hover:bg-primary/10">الدعم النفسي</a></li>
+          <li><a href="/sessions" class="px-4 py-2 rounded-xl <%= path.startsWith('/sessions') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 hover:bg-primary/10">الجلسات</a></li>
+        <% } %>
+        
+        <% if (user) { %>
+          <% if (user.role === 'employee') { %>
+            <li class="dropdown dropdown-hover dropdown-end">
+              <div tabindex="0" class="px-4 py-2 rounded-xl hover:bg-primary/10 flex items-center space-x-1 space-x-reverse transition-all duration-200">
+                <span>المزيد</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52 mt-2">
+                <li><a href="/dashboard" class="<%= path === '/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
+                <li><a href="/training" class="<%= path.startsWith('/training') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المواد التدريبية</a></li>
+                <li><a href="/community" class="<%= path.startsWith('/community') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المجتمع</a></li>
+              </ul>
+            </li>
+          <% } else if (user.role === 'psychologist') { %>
+            <!-- Dashboard link -->
+            <li>
+              <a href="/psychologist/dashboard" class="<%= path === '/psychologist/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-200">لوحة التحكم</a>
+            </li>
+            
+            <!-- Messages link -->
+            <li>
+              <a href="/psychologist/messages" class="<%= path.startsWith('/psychologist/messages') ? 'bg-primary/10 text-primary font-medium' : '' %> px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-200">الرسائل</a>
+            </li>
+            
+            <!-- Sessions link -->
+            <li>
+              <a href="/psychologist/sessions" class="<%= path.startsWith('/psychologist/sessions') ? 'bg-primary/10 text-primary font-medium' : '' %> px-4 py-2 rounded-xl hover:bg-primary/10 transition-all duration-200">الجلسات</a>
+            </li>
+            
+            <!-- Dropdown menu for other pages -->
+            <li class="dropdown dropdown-hover dropdown-end">
+              <div tabindex="0" class="px-4 py-2 rounded-xl hover:bg-primary/10 flex items-center space-x-1 space-x-reverse transition-all duration-200">
+                <span>المزيد</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52 mt-2">
+                <li><a href="/psychologist/statistics" class="<%= path.startsWith('/psychologist/statistics') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الإحصائيات</a></li>
+                <li><a href="/psychologist/availability" class="<%= path.startsWith('/psychologist/availability') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الجدول والمواعيد</a></li>
+                <li><a href="/psychologist/feedback" class="<%= path.startsWith('/psychologist/feedback') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">التقييمات</a></li>
+                <li><a href="/psychologist/profile" class="<%= path.startsWith('/psychologist/profile') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الملف الشخصي</a></li>
+              </ul>
+            </li>
+          <% } else if (user.role === 'admin') { %>
+            <li class="dropdown dropdown-hover dropdown-end">
+              <div tabindex="0" class="px-4 py-2 rounded-xl hover:bg-primary/10 flex items-center space-x-1 space-x-reverse transition-all duration-200">
+                <span>لوحة التحكم</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-xl w-52 mt-2">
+                <li><a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
+                <li><a href="/admin/users" class="<%= path.startsWith('/admin/users') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المستخدمين</a></li>
+                <li><a href="/admin/content" class="<%= path.startsWith('/admin/content') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المحتوى</a></li>
+                <li><a href="/admin/statistics" class="<%= path.startsWith('/admin/statistics') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الإحصائيات</a></li>
+              </ul>
+            </li>
+          <% } %>
+        <% } %>
+      </ul>
+    </div>
+    
+    <!-- User Section -->
+    <div class="navbar-end">
+      <!-- Language Switcher -->
+      <div class="dropdown dropdown-end mx-2">
+        <label tabindex="0" class="btn btn-ghost btn-circle transition-all duration-200 hover:bg-primary/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+          </svg>
+        </label>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-lg bg-base-100 rounded-xl w-52 transition-all duration-200">
+          <li><a href="<%= `${req.path}?lang=ar` %>" class="<%= currentLocale === 'ar' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">العربية</a></li>
+          <li><a href="<%= `${req.path}?lang=en` %>" class="<%= currentLocale === 'en' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">English</a></li>
+        </ul>
+      </div>
+      
+      <% if (user) { %>
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost btn-circle avatar hover:bg-primary/10 transition-all duration-200">
+            <div class="relative rounded-full w-10 h-10">
+              <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="<%= user.first_name %> <%= user.last_name %>" class="rounded-full w-10 h-10 object-cover" />
+              <% } else { %>
+                <div class="bg-primary text-primary-content rounded-full w-10 h-10 flex items-center justify-center text-lg font-medium">
+                  <span><%= user.first_name.charAt(0) %><%= user.last_name.charAt(0) %></span>
+                </div>
+              <% } %>
+              <% if (user.role === 'psychologist') { %>
+                <div class="absolute -bottom-1 -left-1 bg-secondary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+              <% } %>
+            </div>
+          </label>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-3 shadow-lg bg-base-100 rounded-xl w-60 space-y-1 transition-all duration-200">
+            <div class="text-center mb-3 border-b pb-2">
+              <p class="font-medium text-lg text-primary"><%= user.first_name %> <%= user.last_name %></p>
+              <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary"><%= user.role === 'employee' ? 'موظف' : user.role === 'psychologist' ? 'معالج نفسي' : 'مدير' %></span>
+            </div>
+            <li><a href="/dashboard/profile" class="transition-all duration-200 rounded-lg hover:bg-primary/10 flex">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              الملف الشخصي
+            </a></li>
+            <li><a href="/dashboard/change-password" class="transition-all duration-200 rounded-lg hover:bg-primary/10 flex">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              تغيير كلمة المرور
+            </a></li>
+            <li class="divider my-1"></li>
+            <li><a href="/auth/logout" class="transition-all duration-200 rounded-lg hover:bg-error/10 text-error flex">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              تسجيل الخروج
+            </a></li>
+          </ul>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-primary btn-sm rounded-xl shadow-md mx-2 transition-all duration-300 hover:shadow-lg">تسجيل الدخول</a>
+        <a href="/auth/register" class="btn btn-outline btn-primary btn-sm rounded-xl transition-all duration-300 hover:shadow-md">إنشاء حساب</a>
+      <% } %>
+    </div>
+  </div>
+</header>

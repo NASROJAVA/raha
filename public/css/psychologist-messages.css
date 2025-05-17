@@ -1,0 +1,162 @@
+/* Psychologist Messages Page - Elegant and Modern Arabic Design */
+
+/* Status indicators */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #333;
+}
+
+.status-connected {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.status-connecting {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
+}
+
+.status-disconnected {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 6px;
+}
+
+.dot-green {
+  background-color: #4CAF50;
+}
+
+.dot-yellow {
+  background-color: #FFC107;
+}
+
+.dot-red {
+  background-color: #F44336;
+}
+
+/* Conversation list styling */
+.conversation-item {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.conversation-item:hover {
+  transform: translateY(-2px);
+}
+
+.conversation-item.bg-blue-50 {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
+  100% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Custom scrollbar for Arabic RTL interface */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(241, 241, 241, 0.5);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(136, 136, 136, 0.5);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(85, 85, 85, 0.5);
+}
+
+/* RTL specific adjustments */
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Filter tabs animation */
+.border-b-2 {
+  transition: all 0.3s ease;
+}
+
+/* Stats cards */
+.grid-cols-3 > div {
+  transition: all 0.3s ease;
+}
+
+.grid-cols-3 > div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Animations for SweetAlert2 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+  }
+}
+
+.animate__animated {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+.animate__fadeInDown {
+  animation-name: fadeInDown;
+}
+
+.animate__fadeOutUp {
+  animation-name: fadeOutUp;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}

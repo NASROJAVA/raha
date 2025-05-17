@@ -1,0 +1,362 @@
+<%- include('../../partials/header') %>
+
+<div class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <div class="mb-4">
+            <a href="/sessions/<%= session.id %>" class="flex items-center text-primary hover:text-primary-dark transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                العودة إلى تفاصيل الجلسة
+            </a>
+        </div>
+
+        <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+            <!-- Main video area -->
+            <div class="lg:w-3/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h1 class="text-xl font-bold text-gray-800"><%= session.title || 'جلسة عبر الإنترنت' %></h1>
+                        <div class="flex items-center">
+                            <div id="connectionStatus" class="flex items-center mr-4">
+                                <span class="h-2 w-2 rounded-full bg-yellow-500 mr-2"></span>
+                                <span class="text-sm text-gray-600">جاري الاتصال...</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="toggleAudioBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                                    </svg>
+                                </button>
+                                <button id="toggleVideoBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                <button id="shareScreenBtn" class="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                <button id="endCallBtn" class="p-2 rounded-full bg-red-500 hover:bg-red-600 transition duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative bg-black" style="height: 70vh;">
+                        <div id="remoteVideo" class="absolute inset-0 w-full h-full bg-gray-900 flex items-center justify-center">
+                            <div class="text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <p class="mt-4 text-gray-300">في انتظار المشارك الآخر...</p>
+                            </div>
+                        </div>
+                        <div id="localVideo" class="absolute bottom-4 right-4 w-1/4 h-1/4 bg-gray-800 rounded-lg overflow-hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side panel -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
+                    <div class="p-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">تفاصيل الجلسة</h2>
+                    </div>
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex items-center mb-4">
+                            <img src="<%= otherParticipant.avatar || '/images/default-avatar.png' %>" alt="<%= otherParticipant.name %>" class="w-12 h-12 rounded-full mr-3">
+                            <div>
+                                <h3 class="font-semibold"><%= otherParticipant.name %></h3>
+                                <span class="text-sm text-gray-600"><%= user.role === 'employee' ? 'أخصائي نفسي' : 'موظف' %></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center mb-3 text-sm text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <% try { %>
+                                <%= new Date(session.date).toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                            <% } catch (e) { %>
+                                <%= session.date %>
+                            <% } %>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <%= session.startTime %> - <%= session.endTime %>
+                        </div>
+                    </div>
+
+                    <!-- Chat section -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="p-4 border-b border-gray-200">
+                            <h3 class="text-md font-semibold text-gray-800 mb-1">محادثة الجلسة</h3>
+                        </div>
+                        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                            <% if (typeof messages !== 'undefined' && messages.length > 0) { %>
+                                <% messages.forEach(function(message) { %>
+                                    <div class="flex <%= message.sender_id.toString() === user.id.toString() ? 'justify-end' : 'justify-start' %> mb-2">
+                                        <div class="<%= message.sender_id.toString() === user.id.toString() ? 'bg-primary text-white' : 'bg-gray-200' %> rounded-lg py-2 px-4 max-w-xs break-words">
+                                            <p><%= message.message %></p>
+                                            <p class="text-xs text-right mt-1 opacity-70">
+                                                <% try { %>
+                                                    <%= new Date(message.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) %>
+                                                <% } catch (e) { %>
+                                                    <%= message.created_at %>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="text-center text-gray-500 py-4">
+                                    لا توجد رسائل حتى الآن
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="p-4 border-t border-gray-200">
+                            <form id="chatForm" class="flex items-center">
+                                <input type="text" id="chatInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="اكتب رسالتك هنا...">
+                                <button type="submit" class="mr-2 bg-primary text-white rounded-lg p-2 hover:bg-primary-dark">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include WebRTC Handler -->
+<script src="/js/webrtc-handler.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Session and user data
+        const sessionId = '<%= session.id %>';
+        const userId = '<%= user.id %>';
+        const userRole = '<%= user.role %>';
+        
+        // Elements
+        const localVideoContainer = document.getElementById('localVideo');
+        const remoteVideoContainer = document.getElementById('remoteVideo');
+        const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+        const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+        const shareScreenBtn = document.getElementById('shareScreenBtn');
+        const endCallBtn = document.getElementById('endCallBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // Initialize socket connection
+        const socket = io();
+        
+        // Create local and remote video elements
+        const localVideo = document.createElement('video');
+        localVideo.autoplay = true;
+        localVideo.muted = true;
+        localVideo.playsInline = true;
+        localVideo.className = 'w-full h-full object-cover';
+        localVideoContainer.appendChild(localVideo);
+        
+        const remoteVideo = document.createElement('video');
+        remoteVideo.autoplay = true;
+        remoteVideo.playsInline = true;
+        remoteVideo.className = 'w-full h-full object-cover';
+        
+        // Initialize WebRTC handler
+        const webrtc = new WebRTCHandler(socket, sessionId, localVideo, remoteVideo, {
+            userId: userId,
+            userRole: userRole,
+            isInitiator: userRole === 'psychologist',
+            onCallStarted: () => {
+                updateConnectionStatus('connected', 'متصل');
+                remoteVideoContainer.innerHTML = '';
+                remoteVideoContainer.appendChild(remoteVideo);
+            },
+            onCallEnded: () => {
+                updateConnectionStatus('disconnected', 'غير متصل');
+                remoteVideoContainer.innerHTML = `
+                    <div class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <p class="mt-4 text-gray-300">انتهت المكالمة</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Register with socket server
+        socket.on('connect', () => {
+            // Register user with socket
+            socket.emit('register-user', {
+                userId: userId,
+                userRole: userRole,
+                currentPage: 'session',
+                sessionId: sessionId
+            });
+            
+            // Join session room
+            socket.emit('join-session', {
+                sessionId: sessionId,
+                userId: userId,
+                role: userRole
+            });
+            
+            // Start local media
+            webrtc.startLocalStream().then(success => {
+                if (success) {
+                    updateConnectionStatus('waiting', 'في انتظار المشارك الآخر');
+                    
+                    // If psychologist, initiate call when ready
+                    if (userRole === 'psychologist') {
+                        setTimeout(() => {
+                            webrtc.initiateCall();
+                        }, 1000);
+                    }
+                } else {
+                    updateConnectionStatus('error', 'فشل في الوصول إلى الكاميرا أو الميكروفون');
+                }
+            });
+        });
+        
+        // Handle chat messages
+        socket.on('new-session-message', (data) => {
+            addChatMessage({
+                userId: data.senderId,
+                text: data.message,
+                timestamp: data.timestamp,
+                formattedTime: data.formattedTime
+            });
+        });
+        
+        // UI helpers
+        function updateConnectionStatus(status, message) {
+            let statusColor = 'bg-yellow-500';
+            
+            switch (status) {
+                case 'connected':
+                    statusColor = 'bg-green-500';
+                    break;
+                case 'disconnected':
+                    statusColor = 'bg-red-500';
+                    break;
+                case 'error':
+                    statusColor = 'bg-red-500';
+                    break;
+                default:
+                    statusColor = 'bg-yellow-500';
+            }
+            
+            connectionStatus.innerHTML = `
+                <span class="h-2 w-2 rounded-full ${statusColor} mr-2"></span>
+                <span class="text-sm text-gray-600">${message}</span>
+            `;
+        }
+        
+        function addChatMessage(message) {
+            const messageElement = document.createElement('div');
+            
+            // Format the timestamp if not already formatted
+            let displayTime = message.formattedTime || formatTime(message.timestamp);
+            
+            if (message.userId === userId) {
+                messageElement.classList.add('flex', 'justify-end', 'mb-2');
+                messageElement.innerHTML = `
+                    <div class="bg-primary text-white rounded-lg py-2 px-4 max-w-xs break-words">
+                        <p>${message.text}</p>
+                        <p class="text-xs text-right mt-1 opacity-70">${displayTime}</p>
+                    </div>
+                `;
+            } else {
+                messageElement.classList.add('flex', 'justify-start', 'mb-2');
+                messageElement.innerHTML = `
+                    <div class="bg-gray-200 rounded-lg py-2 px-4 max-w-xs break-words">
+                        <p>${message.text}</p>
+                        <p class="text-xs text-right mt-1 opacity-70">${displayTime}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Format timestamp for chat messages
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // UI event handlers
+        toggleAudioBtn.addEventListener('click', () => {
+            const enabled = webrtc.toggleAudio();
+            toggleAudioBtn.innerHTML = enabled ?
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>';
+        });
+        
+        toggleVideoBtn.addEventListener('click', () => {
+            const enabled = webrtc.toggleVideo();
+            toggleVideoBtn.innerHTML = enabled ?
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>';
+        });
+        
+        shareScreenBtn.addEventListener('click', () => {
+            webrtc.shareScreen().then(success => {
+                if (success) {
+                    shareScreenBtn.classList.remove('bg-gray-200');
+                    shareScreenBtn.classList.add('bg-blue-500');
+                    shareScreenBtn.querySelector('svg').classList.remove('text-gray-700');
+                    shareScreenBtn.querySelector('svg').classList.add('text-white');
+                }
+            });
+        });
+        
+        endCallBtn.addEventListener('click', () => {
+            if (confirm('هل أنت متأكد من رغبتك في إنهاء المكالمة؟')) {
+                webrtc.endCall();
+                socket.emit('end-call', { sessionId: sessionId });
+                window.location.href = '/sessions/' + sessionId;
+            }
+        });
+        
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            
+            if (message) {
+                // Send message
+                socket.emit('session-message', {
+                    sessionId: sessionId,
+                    senderId: userId,
+                    role: userRole,
+                    message: message
+                });
+                
+                // Clear input
+                chatInput.value = '';
+            }
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            webrtc.endCall();
+        });
+    });
+</script>
+
+<%- include('../../partials/footer') %>

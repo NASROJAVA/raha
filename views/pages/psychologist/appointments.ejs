@@ -1,0 +1,426 @@
+<%- contentFor('title') %>
+إدارة المواعيد | راحة
+
+<%- contentFor('head') %>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabs = document.querySelectorAll('[role="tab"]');
+    const tabContents = document.querySelectorAll('[role="tabpanel"]');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Deactivate all tabs
+        tabs.forEach(t => {
+          t.classList.remove('tab-active');
+        });
+        
+        // Hide all tab contents
+        tabContents.forEach(content => {
+          content.classList.add('hidden');
+        });
+        
+        // Activate current tab
+        this.classList.add('tab-active');
+        
+        // Show the associated tab content
+        const tabContentId = this.getAttribute('aria-controls');
+        document.getElementById(tabContentId).classList.remove('hidden');
+      });
+    });
+    
+    // Day toggle functionality
+    const dayToggles = document.querySelectorAll('.day-toggle');
+    dayToggles.forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const timeInputs = this.closest('.day-card').querySelector('.time-inputs');
+        if (this.checked) {
+          timeInputs.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+          timeInputs.classList.add('opacity-50', 'pointer-events-none');
+        }
+      });
+    });
+    
+    // Add blocked date functionality
+    const addBlockedDateBtn = document.getElementById('addBlockedDate');
+    if (addBlockedDateBtn) {
+      addBlockedDateBtn.addEventListener('click', function() {
+        const dateInput = document.getElementById('blockDate');
+        const date = dateInput.value;
+        
+        if (!date) return;
+        
+        const dateObj = new Date(date);
+        const formattedDate = dateObj.toLocaleDateString('ar-DZ');
+        
+        const container = document.getElementById('blockedDatesContainer');
+        
+        // Check if no dates message exists and remove it
+        const noDatesParagraph = container.querySelector('p.text-center');
+        if (noDatesParagraph) {
+          container.innerHTML = '<div class="space-y-2"></div>';
+        }
+        
+        const datesContainer = container.querySelector('.space-y-2') || container;
+        
+        const dateElement = document.createElement('div');
+        dateElement.className = 'flex items-center justify-between bg-base-200 p-2 rounded';
+        dateElement.innerHTML = `
+          <span>${formattedDate}</span>
+          <input type="hidden" name="blocked_dates[]" value="${date}">
+          <button type="button" class="btn btn-xs btn-error remove-date">إزالة</button>
+        `;
+        
+        datesContainer.appendChild(dateElement);
+        dateInput.value = '';
+        
+        // Add event listener to the remove button
+        dateElement.querySelector('.remove-date').addEventListener('click', function() {
+          dateElement.remove();
+          
+          // If no dates left, show message
+          if (datesContainer.children.length === 0) {
+            container.innerHTML = '<p class="text-base-content/70 text-center">لا توجد أيام محجوبة</p>';
+          }
+        });
+      });
+    }
+    
+    // Existing remove date buttons
+    document.querySelectorAll('.remove-date').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const dateElement = this.closest('div');
+        dateElement.remove();
+        
+        const container = document.getElementById('blockedDatesContainer');
+        const datesContainer = container.querySelector('.space-y-2');
+        
+        // If no dates left, show message
+        if (datesContainer && datesContainer.children.length === 0) {
+          container.innerHTML = '<p class="text-base-content/70 text-center">لا توجد أيام محجوبة</p>';
+        }
+      });
+    });
+  });
+</script>
+
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Sidebar -->
+    <%- include('../../partials/psychologist-sidebar', { currentPage: 'appointments' }) %>
+    
+    <!-- Main Content -->
+    <div class="w-full lg:w-3/4">
+      <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+          <h1 class="card-title text-2xl font-bold mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            إدارة المواعيد
+          </h1>
+          <p class="text-base-content/70 mb-6">يمكنك من خلال هذه الصفحة إدارة جدول المواعيد الخاص بك وتحديد أوقات الجلسات.</p>
+          
+          <!-- Tabs -->
+          <div class="tabs tabs-bordered mb-6">
+            <button class="tab tab-active" id="upcoming-tab" role="tab" aria-controls="upcoming" aria-selected="true">المواعيد القادمة</button>
+            <button class="tab" id="availability-tab" role="tab" aria-controls="availability" aria-selected="false">تحديد الأوقات المتاحة</button>
+            <button class="tab" id="past-tab" role="tab" aria-controls="past" aria-selected="false">المواعيد السابقة</button>
+          </div>
+          
+          <!-- Tab Content -->
+          <div id="tabContent">
+            <!-- Upcoming Appointments Tab -->
+            <div id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+              <div class="mb-6">
+                <h2 class="text-xl font-semibold flex items-center mb-4">
+                  <div class="badge badge-primary mr-2">1</div>
+                  المواعيد القادمة
+                </h2>
+                
+                <% if (upcomingSessions && upcomingSessions.length > 0) { %>
+                  <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                      <thead>
+                        <tr>
+                          <th class="text-right">المستخدم</th>
+                          <th class="text-right">التاريخ</th>
+                          <th class="text-right">الوقت</th>
+                          <th class="text-right">الحالة</th>
+                          <th class="text-right">الإجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% upcomingSessions.forEach(session => { %>
+                          <tr>
+                            <td>
+                              <div class="flex items-center">
+                                <div class="avatar placeholder">
+                                  <div class="bg-primary text-primary-content rounded-full w-8">
+                                    <span><%= session.user_name.charAt(0) %></span>
+                                  </div>
+                                </div>
+                                <div class="mr-3">
+                                  <div class="font-medium"><%= session.user_name %></div>
+                                  <div class="text-xs opacity-70"><%= session.user_email %></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td><%= new Date(session.session_date).toLocaleDateString('ar-DZ') %></td>
+                            <td><%= session.session_time %></td>
+                            <td>
+                              <div class="badge <%= 
+                                session.status === 'scheduled' ? 'badge-warning' : 
+                                session.status === 'confirmed' ? 'badge-success' : 
+                                session.status === 'cancelled' ? 'badge-error' : 'badge-ghost' 
+                              %>">
+                                <%= session.status === 'scheduled' ? 'مجدول' : 
+                                   session.status === 'confirmed' ? 'مؤكد' : 
+                                   session.status === 'cancelled' ? 'ملغي' : 'غير معروف' %>
+                              </div>
+                            </td>
+                            <td>
+                              <div class="flex space-x-2 items-center">
+                                <a href="/psychologist/sessions/<%= session.id %>" class="btn btn-xs btn-primary ml-2">عرض</a>
+                                <% if (session.status === 'scheduled') { %>
+                                  <form action="/psychologist/sessions/<%= session.id %>/confirm" method="POST" class="inline">
+                                    <button type="submit" class="btn btn-xs btn-success ml-2">تأكيد</button>
+                                  </form>
+                                <% } %>
+                                <% if (session.status !== 'cancelled') { %>
+                                  <form action="/psychologist/sessions/<%= session.id %>/cancel" method="POST" class="inline">
+                                    <button type="submit" class="btn btn-xs btn-error">إلغاء</button>
+                                  </form>
+                                <% } %>
+                              </div>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% } else { %>
+                  <div class="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>لا توجد مواعيد قادمة</span>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Availability Settings Tab -->
+            <div class="hidden" id="availability" role="tabpanel" aria-labelledby="availability-tab">
+              <div class="mb-6">
+                <h2 class="text-xl font-semibold flex items-center mb-4">
+                  <div class="badge badge-primary mr-2">2</div>
+                  تحديد الأوقات المتاحة
+                </h2>
+                
+                <form action="/psychologist/availability/update" method="POST" id="availabilityForm">
+                  <!-- Weekly Schedule -->
+                  <div class="card bg-base-200 mb-6">
+                    <div class="card-body">
+                      <h3 class="card-title text-lg">الجدول الأسبوعي</h3>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <% const days = [
+                          { id: 'sunday', name: 'الأحد' },
+                          { id: 'monday', name: 'الإثنين' },
+                          { id: 'tuesday', name: 'الثلاثاء' },
+                          { id: 'wednesday', name: 'الأربعاء' },
+                          { id: 'thursday', name: 'الخميس' },
+                          { id: 'friday', name: 'الجمعة' },
+                          { id: 'saturday', name: 'السبت' }
+                        ]; %>
+                        
+                        <% days.forEach(day => { %>
+                          <div class="card bg-base-100 shadow-sm day-card">
+                            <div class="card-body p-4">
+                              <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-medium"><%= day.name %></h4>
+                                <label class="flex items-center cursor-pointer">
+                                  <span class="ml-2">متاح</span>
+                                  <input type="checkbox" name="<%= day.id %>_enabled" class="toggle toggle-primary day-toggle" 
+                                    <%= availability && availability[day.id] && JSON.parse(availability[day.id]).enabled ? 'checked' : '' %>>
+                                </label>
+                              </div>
+                              
+                              <div class="grid grid-cols-2 gap-4 time-inputs <%= availability && availability[day.id] && JSON.parse(availability[day.id]).enabled ? '' : 'opacity-50 pointer-events-none' %>">
+                                <div>
+                                  <label class="label">
+                                    <span class="label-text">من</span>
+                                  </label>
+                                  <input type="time" name="<%= day.id %>_start" class="input input-bordered w-full" 
+                                    value="<%= availability && availability[day.id] ? JSON.parse(availability[day.id]).start : '09:00' %>">
+                                </div>
+                                <div>
+                                  <label class="label">
+                                    <span class="label-text">إلى</span>
+                                  </label>
+                                  <input type="time" name="<%= day.id %>_end" class="input input-bordered w-full" 
+                                    value="<%= availability && availability[day.id] ? JSON.parse(availability[day.id]).end : '17:00' %>">
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <% }); %>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Session Settings -->
+                  <div class="card bg-base-200 mb-6">
+                    <div class="card-body">
+                      <h3 class="card-title text-lg">إعدادات الجلسات</h3>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label class="label">
+                            <span class="label-text">مدة الجلسة (بالدقائق)</span>
+                          </label>
+                          <select name="session_duration" class="select select-bordered w-full">
+                            <option value="30" <%= availability && availability.session_duration === 30 ? 'selected' : '' %>>30 دقيقة</option>
+                            <option value="45" <%= availability && availability.session_duration === 45 ? 'selected' : '' %>>45 دقيقة</option>
+                            <option value="60" <%= availability && availability.session_duration === 60 ? 'selected' : '' %>>60 دقيقة</option>
+                            <option value="90" <%= availability && availability.session_duration === 90 ? 'selected' : '' %>>90 دقيقة</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label class="label">
+                            <span class="label-text">وقت الراحة بين الجلسات (بالدقائق)</span>
+                          </label>
+                          <select name="break_time" class="select select-bordered w-full">
+                            <option value="0" <%= availability && availability.break_time === 0 ? 'selected' : '' %>>بدون راحة</option>
+                            <option value="5" <%= availability && availability.break_time === 5 ? 'selected' : '' %>>5 دقائق</option>
+                            <option value="10" <%= availability && availability.break_time === 10 ? 'selected' : '' %>>10 دقائق</option>
+                            <option value="15" <%= availability && availability.break_time === 15 ? 'selected' : '' %>>15 دقيقة</option>
+                            <option value="30" <%= availability && availability.break_time === 30 ? 'selected' : '' %>>30 دقيقة</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Blocked Dates -->
+                  <div class="card bg-base-200 mb-6">
+                    <div class="card-body">
+                      <h3 class="card-title text-lg">الأيام المحجوبة</h3>
+                      
+                      <div class="mb-4">
+                        <div class="flex">
+                          <input type="date" id="blockDate" class="input input-bordered flex-1" min="<%= new Date().toISOString().split('T')[0] %>">
+                          <button type="button" id="addBlockedDate" class="btn btn-primary mr-2">إضافة</button>
+                        </div>
+                      </div>
+                      
+                      <div id="blockedDatesContainer">
+                        <% if (blockedDates && blockedDates.length > 0) { %>
+                          <div class="space-y-2">
+                            <% blockedDates.forEach(date => { %>
+                              <div class="flex items-center justify-between bg-base-200 p-2 rounded">
+                                <span><%= new Date(date.date).toLocaleDateString('ar-DZ') %></span>
+                                <input type="hidden" name="blocked_dates[]" value="<%= date.date %>">
+                                <button type="button" class="btn btn-xs btn-error remove-date">إزالة</button>
+                              </div>
+                            <% }); %>
+                          </div>
+                        <% } else { %>
+                          <p class="text-base-content/70 text-center">لا توجد أيام محجوبة</p>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-end">
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+            <!-- Past Appointments Tab -->
+            <div class="hidden" id="past" role="tabpanel" aria-labelledby="past-tab">
+              <div class="mb-6">
+                <h2 class="text-xl font-semibold flex items-center mb-4">
+                  <div class="badge badge-primary mr-2">3</div>
+                  المواعيد السابقة
+                </h2>
+                
+                <% if (pastSessions && pastSessions.length > 0) { %>
+                  <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                      <thead>
+                        <tr>
+                          <th class="text-right">المستخدم</th>
+                          <th class="text-right">التاريخ</th>
+                          <th class="text-right">الوقت</th>
+                          <th class="text-right">الحالة</th>
+                          <th class="text-right">التقييم</th>
+                          <th class="text-right">الإجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% pastSessions.forEach(session => { %>
+                          <tr>
+                            <td>
+                              <div class="flex items-center">
+                                <div class="avatar placeholder">
+                                  <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                    <span><%= session.user_name.charAt(0) %></span>
+                                  </div>
+                                </div>
+                                <div class="mr-3">
+                                  <div class="font-medium"><%= session.user_name %></div>
+                                  <div class="text-xs opacity-70"><%= session.user_email %></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td><%= new Date(session.session_date).toLocaleDateString('ar-DZ') %></td>
+                            <td><%= session.session_time %></td>
+                            <td>
+                              <div class="badge <%= 
+                                session.status === 'completed' ? 'badge-success' : 
+                                session.status === 'cancelled' ? 'badge-error' : 
+                                session.status === 'no-show' ? 'badge-warning' : 'badge-ghost' 
+                              %>">
+                                <%= session.status === 'completed' ? 'مكتمل' : 
+                                   session.status === 'cancelled' ? 'ملغي' : 
+                                   session.status === 'no-show' ? 'عدم حضور' : 'غير معروف' %>
+                              </div>
+                            </td>
+                            <td>
+                              <% if (session.rating) { %>
+                                <div class="rating rating-sm">
+                                  <% for(let i = 1; i <= 5; i++) { %>
+                                    <input type="radio" class="mask mask-star-2 bg-orange-400" <%= i <= session.rating ? 'checked' : '' %> disabled />
+                                  <% } %>
+                                </div>
+                              <% } else { %>
+                                <span class="text-xs opacity-70">لا يوجد تقييم</span>
+                              <% } %>
+                            </td>
+                            <td>
+                              <a href="/psychologist/sessions/<%= session.id %>" class="btn btn-xs btn-primary">عرض</a>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% } else { %>
+                  <div class="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>لا توجد مواعيد سابقة</span>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

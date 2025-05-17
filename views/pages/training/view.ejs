@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'عرض المادة التدريبية' %></title>
+  
+  <!-- Modern UI Styling -->  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  
+  <!-- Tajawal Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Tajawal', sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background: #f8f9fa; 
+    }
+    .prose img {
+      border-radius: 0.5rem;
+      margin: 1.5rem 0;
+    }
+    .article-content {
+      line-height: 1.8;
+    }
+    .article-content h2 {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #333;
+    }
+    .article-content p {
+      margin-bottom: 1.25rem;
+    }
+    .article-content ul, .article-content ol {
+      padding-right: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .article-content li {
+      margin-bottom: 0.5rem;
+    }
+    .article-content a {
+      color: #A3D9A5;
+      text-decoration: underline;
+    }
+    .aspect-w-16 {
+      position: relative;
+      padding-bottom: 56.25%;
+    }
+    .aspect-w-16 iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'tajawal': ['Tajawal', 'sans-serif'],
+          },
+          colors: {
+            'primary': '#A3D9A5', // Soft green
+            'primary-focus': '#8AC88C', // Darker green
+            'secondary': '#AED9E0', // Light blue
+            'accent': '#F59E0B', // Amber-500
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-tajawal">
+
+<div class="container mx-auto px-4 py-8 animate__animated animate__fadeIn animate__faster">
+  <!-- Back button and breadcrumbs -->
+  <div class="flex flex-wrap items-center mb-6 text-sm">
+    <a href="/" class="text-gray-500 hover:text-primary transition-colors duration-300">
+      <i class="fas fa-home"></i>
+      <span class="mx-2">/</span>
+    </a>
+    <a href="/training" class="text-gray-500 hover:text-primary transition-colors duration-300">
+      <span>المواد التدريبية</span>
+      <span class="mx-2">/</span>
+    </a>
+    <% if (material) { %>
+      <span class="text-gray-600 font-medium truncate max-w-[200px] md:max-w-xs"><%= material.title %></span>
+    <% } else { %>
+      <span class="text-gray-600">غير موجود</span>
+    <% } %>
+  </div>
+  
+  <% if (typeof material !== 'undefined' && material) { %>
+    <!-- Material Header -->
+    <div class="mb-8 animate__animated animate__fadeInUp">
+      <a href="/training" class="inline-flex items-center text-primary hover:text-primary-focus transition-colors mb-6 group">
+        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+        <span>العودة إلى المواد التدريبية</span>
+      </a>
+      
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4"><%= material.title %></h1>
+      
+      <!-- Content type and date -->
+      <div class="flex flex-wrap items-center text-gray-500 gap-4 mb-6">
+        <% 
+          // Map content types to icons and colors
+          var contentTypeData = {};
+          if (material.content_type === 'article') {
+            contentTypeData = { icon: 'fas fa-newspaper', name: 'مقال', color: 'blue' };
+          } else if (material.content_type === 'video') {
+            contentTypeData = { icon: 'fas fa-video', name: 'فيديو', color: 'red' };
+          } else if (material.content_type === 'audio') {
+            contentTypeData = { icon: 'fas fa-headphones', name: 'صوتي', color: 'purple' };
+          } else if (material.content_type === 'document') {
+            contentTypeData = { icon: 'fas fa-file-alt', name: 'مستند', color: 'green' };
+          } else {
+            contentTypeData = { icon: 'fas fa-file', name: 'محتوى', color: 'gray' };
+          }
+        %>
+        
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-<%= contentTypeData.color %>-100 text-<%= contentTypeData.color %>-800">
+          <i class="<%= contentTypeData.icon %> mr-1"></i>
+          <%= contentTypeData.name %>
+        </span>
+        
+        <span class="inline-flex items-center text-sm">
+          <i class="far fa-calendar-alt mr-2"></i>
+          <%= new Date(material.created_at).toLocaleDateString('ar-SA') %>
+        </span>
+        
+        <% if (material.author) { %>
+        <span class="inline-flex items-center text-sm">
+          <i class="far fa-user mr-2"></i>
+          <%= material.author %>
+        </span>
+        <% } %>
+      </div>
+    </div>
+    
+    <!-- Video content gets a full-width layout for maximum impact -->
+    <% if (material.content_type === 'video') { %>
+      <% 
+        // Determine the video URL from any available property
+        let videoUrl = '';
+        if (material.content && material.content.includes('youtube.com')) {
+          videoUrl = material.content;
+        } else if (material.file_url) {
+          videoUrl = material.file_url;
+        } else if (material.external_url) {
+          videoUrl = material.external_url;
+        }
+      %>
+
+      <% if (videoUrl) { %>
+        <!-- Full-width immersive video container -->
+        <div class="mb-12 animate__animated animate__zoomIn bg-gray-900 p-4 rounded-2xl shadow-xl">
+          <% if (material.description) { %>
+            <div class="text-white mb-4 border-r-4 border-primary px-4 py-3">
+              <h2 class="text-xl font-bold mb-2">عن هذا الفيديو</h2>
+              <p><%= material.description %></p>
+            </div>
+          <% } %>
+          
+          <!-- Larger video with cinematic aspect ratio -->
+          <div class="video-container aspect-w-16 rounded-xl overflow-hidden mx-auto max-w-5xl">
+            <iframe src="<%= videoUrl %>" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- Content grid after the video -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Main content -->
+          <div class="md:col-span-2">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-8 animate__animated animate__fadeInUp animate__delay-1s">
+              <!-- Video resources or additional content would go here -->
+              <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-book-reader mr-2 text-primary"></i>
+                موارد إضافية
+              </h3>
+
+              <div class="prose prose-lg max-w-none text-gray-700">
+                <p>لمشاهدة المزيد من المقاطع التعليمية حول هذا الموضوع، يمكنك زيارة صفحة المواد التدريبية الرئيسية.</p>
+                <p>يمكنك أيضًا تحميل المواد المرفقة والاستمتاع بمشاهدة الفيديو بدون اتصال بالإنترنت.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Video Sidebar -->          
+          <div class="md:col-span-1 animate__animated animate__fadeInRight animate__delay-2s">
+            <!-- Related videos section -->
+            <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+              <h3 class="text-lg font-bold mb-4 flex items-center">
+                <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                  <i class="fas fa-video"></i>
+                </span>
+                فيديوهات ذات صلة
+              </h3>
+              
+              <!-- Related videos list -->
+              <div class="space-y-4">
+                <a href="/training/2" class="block relative overflow-hidden rounded-lg hover:opacity-90 transition-opacity">
+                  <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative overflow-hidden rounded-lg">
+                    <div class="absolute inset-0 flex items-center justify-center bg-gray-900/50 text-white">
+                      <i class="fas fa-play-circle text-3xl"></i>
+                    </div>
+                    <img src="https://img.youtube.com/vi/ZToicYcHIOU/mqdefault.jpg" alt="Thumbnail" class="object-cover w-full h-full opacity-80">                    
+                  </div>
+                  <div class="mt-2">
+                    <p class="text-sm font-medium text-gray-800 line-clamp-2">Mindfulness at Work</p>
+                    <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock mr-1"></i> 12:30</p>
+                  </div>
+                </a>
+
+                <a href="/training/4" class="block relative overflow-hidden rounded-lg hover:opacity-90 transition-opacity">
+                  <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative overflow-hidden rounded-lg">
+                    <div class="absolute inset-0 flex items-center justify-center bg-gray-900/50 text-white">
+                      <i class="fas fa-headphones text-2xl"></i>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-400 w-full h-full"></div>
+                  </div>
+                  <div class="mt-2">
+                    <p class="text-sm font-medium text-gray-800 line-clamp-2">Time Management Workshop</p>
+                    <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock mr-1"></i> 18:45</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+            
+            <!-- Download options -->
+            <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+              <h3 class="text-lg font-bold mb-4 flex items-center">
+                <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                  <i class="fas fa-download"></i>
+                </span>
+                خيارات التحميل
+              </h3>
+              
+              <div class="flex flex-col space-y-3">
+                <button class="flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg text-gray-700">
+                  <i class="fas fa-file-pdf mr-2 text-red-500"></i>
+                  <span>تحميل ملخص PDF</span>
+                </button>
+                
+                <button class="flex items-center justify-center px-4 py-2 bg-primary/10 hover:bg-primary/20 transition-colors rounded-lg text-primary">
+                  <i class="fas fa-closed-captioning mr-2"></i>
+                  <span>تحميل الترجمة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <!-- Video not available message -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="md:col-span-2">
+            <div class="bg-white rounded-2xl shadow-md p-8 mb-8 animate__animated animate__fadeIn">
+              <div class="bg-gray-100 p-8 text-center rounded-xl">
+                <i class="fas fa-exclamation-circle text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">عذراً</h3>
+                <p class="text-gray-600 mb-0">الفيديو غير متاح حالياً</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Sidebar still needed for layout purposes -->
+          <div class="md:col-span-1">
+            <!-- Intentionally empty -->
+          </div>
+        </div>
+      <% } %>
+    <% } else { %>
+      <!-- For non-video content, keep the original layout -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Main content -->
+        <div class="md:col-span-2">
+          <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-8 animate__animated animate__fadeInUp animate__delay-1s">
+            <% if (material.description) { %>
+              <div class="text-gray-600 mb-8 bg-gray-50 p-4 rounded-xl border-r-4 border-primary">
+                <%= material.description %>
+              </div>
+            <% } %>
+            
+            <% if (material.content_type === 'article' && material.content) { %>
+              <div class="article-content prose lg:prose-lg max-w-none text-gray-700">
+                <%- material.content %>
+              </div>
+            <% } %>
+          <% } else if (material.content_type === 'audio') { %>
+            <% 
+              // Determine the audio URL from any available property
+              let audioUrl = '';
+              if (material.content) {
+                audioUrl = material.content;
+              } else if (material.file_url) {
+                audioUrl = material.file_url;
+              } else if (material.external_url) {
+                audioUrl = material.external_url;
+              }
+            %>
+            <% if (audioUrl) { %>
+              <div class="audio-container mb-8 bg-gradient-to-r from-primary/5 to-primary/10 p-6 rounded-xl">
+                <audio controls class="w-full mb-3">
+                  <source src="<%= audioUrl %>" type="audio/mpeg">
+                  Your browser does not support the audio element.
+                </audio>
+                <div class="text-xs text-center text-gray-500">يمكنك تشغيل الملف الصوتي من خلال الضغط على زر التشغيل</div>
+              </div>
+            <% } else { %>
+              <div class="bg-gray-100 p-8 text-center rounded-xl">
+                <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-4"></i>
+                <p class="text-gray-600">عذراً، الملف الصوتي غير متاح حالياً</p>
+              </div>
+            <% } %>
+          <% } else if (material.content_type === 'document') { %>
+            <% 
+              // Determine the document URL from any available property
+              let docUrl = '';
+              if (material.content) {
+                docUrl = material.content;
+              } else if (material.file_url) {
+                docUrl = material.file_url;
+              } else if (material.external_url) {
+                docUrl = material.external_url;
+              }
+            %>
+            <% if (docUrl) { %>
+              <div class="document-container mb-6">
+                <a href="<%= docUrl %>" target="_blank" class="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300 border border-gray-200">
+                  <i class="fas fa-file-pdf text-5xl text-primary mb-4"></i>
+                  <span class="font-medium text-gray-800 mb-2">فتح المستند</span>
+                  <span class="text-xs text-gray-500">اضغط هنا لفتح المستند في نافذة جديدة</span>
+                </a>
+              </div>
+            <% } else { %>
+              <div class="bg-gray-100 p-8 text-center rounded-xl">
+                <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-4"></i>
+                <p class="text-gray-600">عذراً، المستند غير متاح حالياً</p>
+              </div>
+            <% } %>
+          <% } else { %>
+            <div class="bg-gray-100 p-8 text-center rounded-xl">
+              <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-4"></i>
+              <p class="text-gray-600">لا يوجد محتوى متاح</p>
+            </div>
+          <% } %>

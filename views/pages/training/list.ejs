@@ -1,0 +1,295 @@
+<!-- Additional head content for this page -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<%- contentFor('body') %>
+<!-- Hero section with page title and search -->
+<div class="bg-gradient-to-b from-primary/10 to-base-100 py-8 px-4 rounded-2xl shadow-sm mb-8 transition-all duration-300 animate__animated animate__fadeIn">
+  <div class="container mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">المواد التدريبية</h1>
+        <p class="text-gray-600 text-sm md:text-base">استكشف مجموعة من المواد التدريبية والموارد لتعزيز صحتك النفسية ومهاراتك في التعامل مع الضغوط</p>
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="w-full md:w-1/3">
+        <form action="/training/search" method="GET" class="flex shadow-md rounded-xl overflow-hidden">
+          <input type="text" name="query" placeholder="ابحث عن مواد تدريبية..." 
+                class="flex-grow px-4 py-3 border-0 focus:ring-2 focus:ring-primary/30 focus:outline-none text-sm md:text-base" required>
+          <button type="submit" 
+                  class="px-4 py-3 bg-primary text-white hover:bg-primary-focus transition-colors duration-300">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Content Type Filters -->
+<div class="container mx-auto mb-12 animate__animated animate__fadeInUp animate__delay-1s">
+  <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+    <span class="inline-block w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary">
+      <i class="fas fa-filter"></i>
+    </span>
+    تصفح حسب النوع
+  </h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <a href="/training/type/article" class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 text-center transform hover:-translate-y-1 group overflow-hidden relative">
+      <div class="absolute inset-0 bg-primary/5 w-0 group-hover:w-full transition-all duration-500 rounded-2xl"></div>
+      <div class="text-4xl text-primary mb-3 relative">
+        <i class="fas fa-newspaper"></i>
+      </div>
+      <span class="font-medium text-gray-800 relative">مقالات</span>
+    </a>
+    <a href="/training/type/video" class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 text-center transform hover:-translate-y-1 group overflow-hidden relative">
+      <div class="absolute inset-0 bg-primary/5 w-0 group-hover:w-full transition-all duration-500 rounded-2xl"></div>
+      <div class="text-4xl text-primary mb-3 relative">
+        <i class="fas fa-video"></i>
+      </div>
+      <span class="font-medium text-gray-800 relative">فيديوهات</span>
+    </a>
+    <a href="/training/type/audio" class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 text-center transform hover:-translate-y-1 group overflow-hidden relative">
+      <div class="absolute inset-0 bg-primary/5 w-0 group-hover:w-full transition-all duration-500 rounded-2xl"></div>
+      <div class="text-4xl text-primary mb-3 relative">
+        <i class="fas fa-headphones"></i>
+      </div>
+      <span class="font-medium text-gray-800 relative">صوتيات</span>
+    </a>
+    <a href="/training/type/document" class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 text-center transform hover:-translate-y-1 group overflow-hidden relative">
+      <div class="absolute inset-0 bg-primary/5 w-0 group-hover:w-full transition-all duration-500 rounded-2xl"></div>
+      <div class="text-4xl text-primary mb-3 relative">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <span class="font-medium text-gray-800 relative">مستندات</span>
+    </a>
+  </div>
+</div>
+
+<!-- Featured Materials -->
+<div class="container mx-auto mb-12 animate__animated animate__fadeInUp animate__delay-2s">
+  <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+    <span class="inline-block w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary">
+      <i class="fas fa-star"></i>
+    </span>
+    مواد مميزة
+  </h2>
+  
+  <div class="grid md:grid-cols-3 gap-6">
+    <% if (materials && materials.length > 0) { %>
+      <% 
+        // Get the first 3 materials or less if there are fewer
+        const featuredMaterials = materials.slice(0, 3);
+        
+        // Map content types to icons
+        const contentTypeIcons = {
+          'article': 'fas fa-newspaper',
+          'video': 'fas fa-video',
+          'audio': 'fas fa-headphones',
+          'document': 'fas fa-file-alt'
+        };
+        
+        // Map content types to badge colors
+        const contentTypeBadgeColors = {
+          'article': 'bg-blue-100 text-blue-800',
+          'video': 'bg-red-100 text-red-800',
+          'audio': 'bg-purple-100 text-purple-800',
+          'document': 'bg-green-100 text-green-800'
+        };
+      %>
+      
+      <% featuredMaterials.forEach(material => { %>
+        <% 
+          // Default to 'article' if content_type is undefined
+          const featuredType = material.content_type || 'article';
+          const badgeColor = contentTypeBadgeColors[featuredType] || 'bg-gray-100 text-gray-800';
+        %>
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="h-48 bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center relative">
+            <i class="<%= contentTypeIcons[featuredType] || 'fas fa-file' %> text-6xl text-primary opacity-40"></i>
+            <div class="absolute top-4 right-4 rounded-full px-3 py-1 text-xs <%= badgeColor %>">
+              <% if (featuredType === 'article') { %>
+                مقال
+              <% } else if (featuredType === 'video') { %>
+                فيديو
+              <% } else if (featuredType === 'audio') { %>
+                صوتي
+              <% } else if (featuredType === 'document') { %>
+                مستند
+              <% } else { %>
+                محتوى
+              <% } %>  
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-bold mb-3 text-gray-800 line-clamp-2 hover:text-primary transition-colors duration-300"><%= material.title %></h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-3"><%= material.description %></p>
+            <div class="flex justify-between items-center">
+              <a href="/training/<%= material.id %>" 
+                 class="inline-flex items-center text-primary hover:text-primary-focus font-medium transition-colors duration-300">
+                قراءة المزيد
+                <i class="fas fa-arrow-left ms-2 text-xs"></i>
+              </a>
+              <span class="text-xs text-gray-500"><i class="far fa-clock me-1"></i> <%= new Date(material.created_at).toLocaleDateString('ar-SA') %></span>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="col-span-3 text-center py-12 bg-white rounded-2xl shadow-md">
+        <div class="text-4xl text-gray-300 mb-4"><i class="fas fa-search"></i></div>
+        <p class="text-gray-500 mb-2">لا توجد مواد تدريبية متاحة حالياً</p>
+        <p class="text-gray-400 text-sm">يرجى التحقق لاحقاً, سيتم إضافة مواد جديدة قريباً</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- All Materials -->
+<div class="container mx-auto mb-16 animate__animated animate__fadeInUp animate__delay-3s">
+  <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+    <span class="inline-block w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary">
+      <i class="fas fa-book-open"></i>
+    </span>
+    جميع المواد التدريبية
+  </h2>
+  
+  <% if (materials && materials.length > 0) { %>
+    <% 
+      // Map content types to icons and colors - defined at the top level for use in all sections
+      const contentTypeIcons = {
+        'article': 'fas fa-newspaper',
+        'video': 'fas fa-video',
+        'audio': 'fas fa-headphones',
+        'document': 'fas fa-file-alt'
+      };
+      
+      const contentTypeColors = {
+        'article': 'text-blue-600',
+        'video': 'text-red-600',
+        'audio': 'text-purple-600',
+        'document': 'text-green-600'
+      };
+      
+      const contentTypeBadgeColors = {
+        'article': 'bg-blue-100 text-blue-800',
+        'video': 'bg-red-100 text-red-800',
+        'audio': 'bg-purple-100 text-purple-800',
+        'document': 'bg-green-100 text-green-800'
+      };
+    %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <% materials.forEach(material => { %>
+        <% 
+          // Default to 'article' if content_type is undefined
+          const type = material.content_type || 'article';
+          const borderColor = contentTypeColors[type] ? contentTypeColors[type].replace('text-', 'border-') : 'border-gray-400';
+        %>
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border-t-4 <%= borderColor %>">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="<%= contentTypeIcons[type] || 'fas fa-file' %> <%= contentTypeColors[type] || 'text-gray-500' %> mr-2"></i>
+                <span>
+                  <% if (type === 'article') { %>
+                    مقال
+                  <% } else if (type === 'video') { %>
+                    فيديو
+                  <% } else if (type === 'audio') { %>
+                    صوتي
+                  <% } else if (type === 'document') { %>
+                    مستند
+                  <% } else { %>
+                    محتوى
+                  <% } %>
+                </span>
+              </div>
+              <span class="text-xs text-gray-400"><i class="far fa-calendar-alt me-1"></i> <%= new Date(material.created_at).toLocaleDateString('ar-SA') %></span>
+            </div>
+            <h3 class="text-lg font-bold mb-3 text-gray-800 hover:text-primary transition-colors duration-300 line-clamp-1"><%= material.title %></h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2"><%= material.description %></p>
+            <div class="flex justify-between items-center">
+              <a href="/training/<%= material.id %>" 
+                 class="inline-flex items-center text-primary hover:text-primary-focus font-medium transition-colors duration-300">
+                قراءة المزيد
+                <i class="fas fa-arrow-left ms-2 text-xs"></i>
+              </a>
+              
+              <!-- Category badge -->
+              <% if (material.category) { %>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"><%= material.category %></span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+    
+    <!-- Pagination if necessary -->
+    <% if (materials.length > 9) { %>
+    <div class="flex justify-center mt-10">
+      <div class="join">
+        <button class="join-item btn btn-sm">«</button>
+        <button class="join-item btn btn-sm btn-active">1</button>
+        <button class="join-item btn btn-sm">2</button>
+        <button class="join-item btn btn-sm">3</button>
+        <button class="join-item btn btn-sm">»</button>
+      </div>
+    </div>
+    <% } %>
+    
+  <% } else { %>
+    <div class="text-center py-12 bg-white rounded-2xl shadow-md">
+      <div class="text-5xl text-gray-300 mb-4"><i class="fas fa-book"></i></div>
+      <p class="text-gray-500 mb-2">لا توجد مواد تدريبية متاحة حالياً</p>
+      <p class="text-gray-400 text-sm">يرجى التحقق لاحقاً, سيتم إضافة مواد جديدة قريباً</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- Back to top button -->
+<button id="back-to-top" class="fixed bottom-6 left-6 p-3 rounded-full bg-primary text-white shadow-lg transition-all duration-300 opacity-0 translate-y-10 hidden z-50 hover:bg-primary-focus">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+  </svg>
+</button>
+
+<!-- Page-specific scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Back to top button functionality
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    if (backToTopButton) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTopButton.classList.remove('opacity-0', 'translate-y-10', 'hidden');
+          backToTopButton.classList.add('opacity-100', 'translate-y-0');
+        } else {
+          backToTopButton.classList.add('opacity-0', 'translate-y-10');
+          backToTopButton.classList.remove('opacity-100', 'translate-y-0');
+          setTimeout(() => {
+            if (window.scrollY <= 300) {
+              backToTopButton.classList.add('hidden');
+            }
+          }, 300);
+        }
+      });
+      
+      backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    }
+    
+    // Toast notification demo - will show a success message when the page loads
+    if (window.showToast) {
+      setTimeout(() => {
+        window.showToast('تم تحديث المواد التدريبية بنجاح', 'success');
+      }, 1000);
+    }
+  });
+</script>

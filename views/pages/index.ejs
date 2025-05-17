@@ -1,0 +1,225 @@
+<div class="flex flex-col items-center">
+  <!-- Hero Section -->
+  <section class="hero min-h-[70vh] bg-gradient-to-r from-primary to-secondary text-white">
+    <div class="hero-content text-center">
+      <div class="max-w-4xl animate__animated animate__fadeIn">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+          راحة - منصة للصحة النفسية في مكان العمل
+        </h1>
+        <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto animate__animated animate__fadeIn animate__delay-1s">
+          منصة رقمية متكاملة لمساعدة الموظفين على مراقبة صحتهم النفسية وتقليل ضغط العمل
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 animate__animated animate__fadeIn animate__delay-2s">
+          <% if (!user) { %>
+            <a href="/auth/register" class="btn btn-lg btn-accent">
+              ابدأ الآن
+            </a>
+            <a href="/auth/login" class="btn btn-lg btn-outline btn-accent">
+              تسجيل الدخول
+            </a>
+          <% } else { %>
+            <a href="<%= user.role === 'employee' ? '/dashboard' : '/psychologist/dashboard' %>" class="btn btn-lg btn-accent">
+              لوحة التحكم
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-base-100">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-12 text-base-content">مميزات منصة راحة</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <div class="card-body items-center text-center">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-16">
+                <span class="text-2xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <h3 class="card-title mt-4">استبيانات الضغط اليومية</h3>
+            <p>قم بمراقبة مستوى الضغط لديك من خلال استبيانات قصيرة ومتابعة تقدمك باستخدام رسوم بيانية تفاعلية.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <div class="card-body items-center text-center">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-16">
+                <span class="text-2xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <h3 class="card-title mt-4">دعم نفسي متخصص</h3>
+            <p>تواصل مع معالجين نفسيين معتمدين من خلال رسائل سرية وجلسات صوتية/مرئية للحصول على الدعم الذي تحتاجه.</p>
+          </div>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <div class="card-body items-center text-center">
+            <div class="avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-16">
+                <span class="text-2xl">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <h3 class="card-title mt-4">مواد تدريبية وتعليمية</h3>
+            <p>استفد من مجموعة متنوعة من المقالات والفيديوهات التعليمية حول الصحة النفسية وإدارة الضغط.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="py-16 bg-base-200">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-12 text-base-content">كيف تعمل منصة راحة</h2>
+      
+      <ul class="steps steps-vertical lg:steps-horizontal w-full">
+        <li class="step step-primary">
+          <div class="mt-4">
+            <h3 class="font-semibold text-lg">التسجيل</h3>
+            <p class="text-base-content/70 max-w-xs mx-auto">أنشئ حسابك في منصة راحة ببساطة باستخدام بريدك الإلكتروني.</p>
+          </div>
+        </li>
+        <li class="step step-primary">
+          <div class="mt-4">
+            <h3 class="font-semibold text-lg">استبيان الضغط</h3>
+            <p class="text-base-content/70 max-w-xs mx-auto">أكمل استبيان الضغط اليومي لمراقبة مستوى الضغط لديك.</p>
+          </div>
+        </li>
+        <li class="step step-primary">
+          <div class="mt-4">
+            <h3 class="font-semibold text-lg">الحصول على الدعم</h3>
+            <p class="text-base-content/70 max-w-xs mx-auto">تواصل مع المعالجين النفسيين واحجز جلسات للحصول على الدعم المتخصص.</p>
+          </div>
+        </li>
+        <li class="step step-primary">
+          <div class="mt-4">
+            <h3 class="font-semibold text-lg">تحسين الصحة النفسية</h3>
+            <p class="text-base-content/70 max-w-xs mx-auto">استفد من النصائح والمواد التعليمية لتحسين صحتك النفسية وتقليل الضغط.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="py-16 bg-base-100">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-12 text-base-content">ماذا يقول المستخدمون</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Testimonial 1 -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <div class="flex items-center mb-4">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-12">
+                  <span>أم</span>
+                </div>
+              </div>
+              <div class="ml-4">
+                <h4 class="font-semibold">أحمد محمد</h4>
+                <p class="text-sm text-base-content/60">مهندس برمجيات</p>
+              </div>
+            </div>
+            <div class="rating">
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-1" class="mask mask-star-2 bg-accent" checked />
+            </div>
+            <p class="mt-4">"ساعدتني منصة راحة على فهم مستوى الضغط لدي والتعامل معه بشكل أفضل. الجلسات مع المعالج النفسي كانت مفيدة جداً."</p>
+          </div>
+        </div>
+        
+        <!-- Testimonial 2 -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <div class="flex items-center mb-4">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-12">
+                  <span>سع</span>
+                </div>
+              </div>
+              <div class="ml-4">
+                <h4 class="font-semibold">سارة عبدالله</h4>
+                <p class="text-sm text-base-content/60">مديرة موارد بشرية</p>
+              </div>
+            </div>
+            <div class="rating">
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-2" class="mask mask-star-2 bg-accent" />
+            </div>
+            <p class="mt-4">"كمديرة موارد بشرية، لاحظت تحسناً كبيراً في أداء الفريق بعد استخدام منصة راحة. انخفض معدل الغياب وتحسنت الإنتاجية."</p>
+          </div>
+        </div>
+        
+        <!-- Testimonial 3 -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <div class="flex items-center mb-4">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-12">
+                  <span>خع</span>
+                </div>
+              </div>
+              <div class="ml-4">
+                <h4 class="font-semibold">خالد العمري</h4>
+                <p class="text-sm text-base-content/60">محلل مالي</p>
+              </div>
+            </div>
+            <div class="rating">
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-accent" checked />
+              <input type="radio" name="rating-3" class="mask mask-star-2 bg-accent" />
+            </div>
+            <p class="mt-4">"المواد التدريبية على المنصة ممتازة ومفيدة. تعلمت الكثير عن كيفية إدارة الضغط والتوازن بين العمل والحياة الشخصية."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-gradient-to-r from-primary to-secondary text-white">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-6">ابدأ رحلتك نحو صحة نفسية أفضل اليوم</h2>
+      <p class="text-xl mb-8 max-w-3xl mx-auto">انضم إلى مجتمع راحة واستفد من الدعم النفسي المتخصص والموارد التعليمية لتحسين صحتك النفسية في مكان العمل.</p>
+      
+      <% if (!user) { %>
+        <a href="/auth/register" class="btn btn-lg btn-accent">
+          سجل الآن مجاناً
+        </a>
+      <% } else { %>
+        <a href="<%= user.role === 'employee' ? '/dashboard' : '/psychologist/dashboard' %>" class="btn btn-lg btn-accent">
+          الذهاب إلى لوحة التحكم
+        </a>
+      <% } %>
+    </div>
+  </section>
+</div>

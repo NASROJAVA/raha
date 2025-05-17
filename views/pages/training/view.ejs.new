@@ -1,0 +1,364 @@
+<!-- Additional head content for this page -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+  .prose img {
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  .article-content {
+    line-height: 1.8;
+  }
+  .article-content h2 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+  }
+  .article-content p {
+    margin-bottom: 1.25rem;
+  }
+  .article-content ul, .article-content ol {
+    padding-right: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .article-content li {
+    margin-bottom: 0.5rem;
+  }
+  .article-content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+  .aspect-w-16 {
+    position: relative;
+    padding-bottom: 56.25%;
+  }
+  .aspect-w-16 iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+</style>
+
+<%- contentFor('body') %>
+<div class="container mx-auto px-4 py-8 animate__animated animate__fadeIn animate__faster">
+  <!-- Back button and breadcrumbs -->
+  <div class="flex flex-wrap items-center mb-6 text-sm">
+    <a href="/" class="text-gray-500 hover:text-primary transition-colors duration-300">
+      <i class="fas fa-home"></i>
+      <span class="mx-2">/</span>
+    </a>
+    <a href="/training" class="text-gray-500 hover:text-primary transition-colors duration-300">
+      <span>المواد التدريبية</span>
+      <span class="mx-2">/</span>
+    </a>
+    <% if (material) { %>
+      <span class="text-gray-600 font-medium truncate max-w-[200px] md:max-w-xs"><%= material.title %></span>
+    <% } else { %>
+      <span class="text-gray-600">غير موجود</span>
+    <% } %>
+  </div>
+  
+  <% if (material) { %>
+    <!-- Material Header -->
+    <div class="mb-8 animate__animated animate__fadeInUp">
+      <a href="/training" class="inline-flex items-center text-primary hover:text-primary-focus transition-colors mb-6 group">
+        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+        <span>العودة إلى المواد التدريبية</span>
+      </a>
+      
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4"><%= material.title %></h1>
+      
+      <!-- Content type and date -->
+      <div class="flex flex-wrap items-center text-gray-500 gap-4 mb-6">
+        <% 
+          // Map content types to icons and colors
+          var contentTypeData = {};
+          if (material.content_type === 'article') {
+            contentTypeData = { icon: 'fas fa-newspaper', name: 'مقال', color: 'blue' };
+          } else if (material.content_type === 'video') {
+            contentTypeData = { icon: 'fas fa-video', name: 'فيديو', color: 'red' };
+          } else if (material.content_type === 'audio') {
+            contentTypeData = { icon: 'fas fa-headphones', name: 'صوتي', color: 'purple' };
+          } else if (material.content_type === 'document') {
+            contentTypeData = { icon: 'fas fa-file-alt', name: 'مستند', color: 'green' };
+          } else {
+            contentTypeData = { icon: 'fas fa-file', name: 'محتوى', color: 'gray' };
+          }
+        %>
+        
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-<%= contentTypeData.color %>-100 text-<%= contentTypeData.color %>-800">
+          <i class="<%= contentTypeData.icon %> mr-1"></i>
+          <%= contentTypeData.name %>
+        </span>
+        
+        <span class="inline-flex items-center text-sm">
+          <i class="far fa-calendar-alt mr-2"></i>
+          <%= new Date(material.created_at).toLocaleDateString('ar-SA') %>
+        </span>
+        
+        <% if (material.author) { %>
+        <span class="inline-flex items-center text-sm">
+          <i class="far fa-user mr-2"></i>
+          <%= material.author %>
+        </span>
+        <% } %>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Main content -->
+      <div class="md:col-span-2">
+        <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-8 animate__animated animate__fadeInUp animate__delay-1s">
+          <% if (material.description) { %>
+            <div class="text-gray-600 mb-8 bg-gray-50 p-4 rounded-xl border-r-4 border-primary">
+              <%= material.description %>
+            </div>
+          <% } %>
+          
+          <% if (material.content_type === 'article') { %>
+            <div class="article-content prose lg:prose-lg max-w-none text-gray-700">
+              <%- material.content %>
+            </div>
+          <% } else if (material.content_type === 'video') { %>
+            <div class="video-container mb-6 aspect-w-16 shadow-lg rounded-xl overflow-hidden">
+              <iframe src="<%= material.content || material.file_path %>" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <% if (material.transcript) { %>
+              <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                  <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                    <i class="fas fa-file-alt"></i>
+                  </span>
+                  النص المكتوب
+                </h3>
+                <div class="prose max-w-none text-gray-600 bg-gray-50 p-4 rounded-xl">
+                  <%= material.transcript %>
+                </div>
+              </div>
+            <% } %>
+          <% } else if (material.content_type === 'audio') { %>
+            <div class="audio-container mb-8 bg-gradient-to-r from-primary/5 to-primary/10 p-6 rounded-xl">
+              <% if (material.content || material.file_path) { %>
+              <audio controls class="w-full mb-3">
+                <source src="<%= material.content || material.file_path %>" type="audio/mpeg">
+                Your browser does not support the audio element.
+              </audio>
+              <div class="text-xs text-center text-gray-500">يمكنك تشغيل الملف الصوتي من خلال الضغط على زر التشغيل</div>
+              <% } else { %>
+              <div class="bg-gray-200 flex items-center justify-center p-6 rounded-md">
+                <p class="text-gray-500">الملف الصوتي غير متوفر</p>
+              </div>
+              <% } %>
+            </div>
+          <% } else if (material.content_type === 'document') { %>
+            <div class="document-container mb-6">
+              <% if (material.content || material.file_path) { %>
+              <a href="<%= material.content || material.file_path %>" target="_blank" class="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300 border border-gray-200">
+                <i class="fas fa-file-pdf text-5xl text-primary mb-4"></i>
+                <span class="font-medium text-gray-800 mb-2">فتح المستند</span>
+                <span class="text-xs text-gray-500">اضغط هنا لفتح المستند في نافذة جديدة</span>
+              </a>
+              <% } else { %>
+              <div class="bg-gray-200 flex items-center justify-center p-6 rounded-md">
+                <p class="text-gray-500">المستند غير متوفر</p>
+              </div>
+              <% } %>
+            </div>
+            <!-- Share and save buttons -->
+            <div class="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
+              <div class="flex space-x-4 space-x-reverse">
+                <button class="text-gray-500 hover:text-primary transition-colors duration-300">
+                  <i class="far fa-bookmark mr-1"></i>
+                  <span>حفظ</span>
+                </button>
+                <button class="text-gray-500 hover:text-primary transition-colors duration-300">
+                  <i class="far fa-share-square mr-1"></i>
+                  <span>مشاركة</span>
+                </button>
+              </div>
+              <button onclick="window.print()" class="text-gray-500 hover:text-primary transition-colors duration-300">
+                <i class="fas fa-print mr-1"></i>
+                <span>طباعة</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="md:col-span-1 animate__animated animate__fadeInRight animate__delay-2s">
+          <!-- Author info if available -->
+          <% if (material.author) { %>
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+              <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                <i class="fas fa-user"></i>
+              </span>
+              عن الكاتب
+            </h3>
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-3 overflow-hidden">
+                <% if (material.author_image) { %>
+                  <img src="<%= material.author_image %>" alt="<%= material.author %>" class="w-full h-full object-cover">
+                <% } else { %>
+                  <i class="fas fa-user text-gray-400"></i>
+                <% } %>
+              </div>
+              <div>
+                <div class="font-medium"><%= material.author %></div>
+                <% if (material.author_title) { %>
+                  <div class="text-sm text-gray-500"><%= material.author_title %></div>
+                <% } %>
+              </div>
+            </div>
+            <% if (material.author_bio) { %>
+            <p class="text-sm text-gray-600"><%= material.author_bio %></p>
+            <% } %>
+          </div>
+          <% } %>
+          
+          <!-- Related materials -->
+          <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+              <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                <i class="fas fa-link"></i>
+              </span>
+              مواضيع ذات صلة
+            </h3>
+            
+            <!-- If there are related materials, show them here -->
+            <% if (material.related_materials && material.related_materials.length > 0) { %>
+              <div class="space-y-4">
+                <% 
+                for (var i = 0; i < material.related_materials.length; i++) {
+                  var related = material.related_materials[i];
+                  // Safely get related content type icon and name
+                  var relatedType = related.content_type || 'article';
+                  var relatedIcon = 'fas fa-file';
+                  var relatedName = 'محتوى';
+                  
+                  if (relatedType === 'article') {
+                    relatedIcon = 'fas fa-newspaper';
+                    relatedName = 'مقال';
+                  } else if (relatedType === 'video') {
+                    relatedIcon = 'fas fa-video';
+                    relatedName = 'فيديو';
+                  } else if (relatedType === 'audio') {
+                    relatedIcon = 'fas fa-headphones';
+                    relatedName = 'صوتي';
+                  } else if (relatedType === 'document') {
+                    relatedIcon = 'fas fa-file-alt';
+                    relatedName = 'مستند';
+                  }
+                %>
+                  <a href="/training/<%= related.id %>" class="block p-3 rounded-xl hover:bg-gray-50 transition-colors duration-300">
+                    <div class="text-sm font-medium text-gray-800 mb-1 line-clamp-2"><%= related.title %></div>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <i class="<%= relatedIcon %> mr-1"></i>
+                      <span><%= relatedName %></span>
+                    </div>
+                  </a>
+                <% } %>
+              </div>
+            <% } else { %>
+              <!-- Placeholder for related materials -->
+              <div class="space-y-4">
+                <a href="#" class="block p-3 rounded-xl hover:bg-gray-50 transition-colors duration-300">
+                  <div class="text-sm font-medium text-gray-800 mb-1 line-clamp-2">التعامل مع الضغط النفسي في بيئة العمل</div>
+                  <div class="flex items-center text-xs text-gray-500">
+                    <i class="fas fa-newspaper mr-1"></i>
+                    <span>مقال</span>
+                  </div>
+                </a>
+                <a href="#" class="block p-3 rounded-xl hover:bg-gray-50 transition-colors duration-300">
+                  <div class="text-sm font-medium text-gray-800 mb-1 line-clamp-2">تمارين التنفس للاسترخاء</div>
+                  <div class="flex items-center text-xs text-gray-500">
+                    <i class="fas fa-video mr-1"></i>
+                    <span>فيديو</span>
+                  </div>
+                </a>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Tags if available -->
+          <% if (material.tags && material.tags.length > 0) { %>
+          <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+              <span class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center mr-2 text-primary text-xs">
+                <i class="fas fa-tags"></i>
+              </span>
+              الوسوم
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <% 
+              for (var i = 0; i < material.tags.length; i++) {
+                var tag = material.tags[i]; 
+              %>
+                <a href="/training/tag/<%= tag %>" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full transition-colors duration-300">
+                  #<%= tag %>
+                </a>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    
+  <% } else { %>
+    <!-- Material Not Found -->
+    <div class="bg-white rounded-2xl shadow-md p-8 text-center animate__animated animate__fadeIn">
+      <div class="text-5xl text-gray-300 mb-4"><i class="fas fa-search"></i></div>
+      <h2 class="text-xl font-bold text-gray-800 mb-3">لم يتم العثور على المادة التدريبية</h2>
+      <p class="text-gray-500 mb-6">ربما تمت إزالتها أو لم تعد متاحة</p>
+      <a href="/training" class="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-focus transition-colors duration-300">
+        <i class="fas fa-arrow-right ml-2"></i>
+        <span>العودة إلى المواد التدريبية</span>
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<!-- Back to top button -->
+<button id="back-to-top" class="fixed bottom-6 left-6 p-3 rounded-full bg-primary text-white shadow-lg transition-all duration-300 opacity-0 translate-y-10 hidden z-50 hover:bg-primary-focus">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+  </svg>
+</button>
+
+<!-- Page-specific scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Back to top button functionality
+    var backToTopButton = document.getElementById('back-to-top');
+    
+    if (backToTopButton) {
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+          backToTopButton.classList.remove('opacity-0', 'translate-y-10', 'hidden');
+          backToTopButton.classList.add('opacity-100', 'translate-y-0');
+        } else {
+          backToTopButton.classList.add('opacity-0', 'translate-y-10');
+          backToTopButton.classList.remove('opacity-100', 'translate-y-0');
+          setTimeout(function() {
+            if (window.scrollY <= 300) {
+              backToTopButton.classList.add('hidden');
+            }
+          }, 300);
+        }
+      });
+      
+      backToTopButton.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    }
+  });
+</script>

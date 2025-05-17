@@ -1,0 +1,254 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">تحديد الأوقات المتاحة</h1>
+        <div>
+            <a href="/psychologist/sessions" class="text-primary hover:text-primary-dark transition duration-300">
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    العودة إلى الجلسات
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-md">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    حدد جدول توافرك الأسبوعي. سيتمكن الموظفون من حجز الجلسات خلال الفترات الزمنية المتاحة فقط. يمكنك أيضًا حظر تواريخ محددة للعطلات أو الإجازات الشخصية.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Weekly Schedule -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">الجدول الأسبوعي</h2>
+                    <p class="text-sm text-gray-600 mt-1">حدد توافرك الأسبوعي المعتاد</p>
+                </div>
+                <div class="p-6">
+                    <form id="weeklyScheduleForm" action="/psychologist/availability/update" method="POST">
+                        <div class="space-y-6">
+                            <% 
+                            const days = [
+                                { id: 'monday', name: 'الاثنين' },
+                                { id: 'tuesday', name: 'الثلاثاء' },
+                                { id: 'wednesday', name: 'الأربعاء' },
+                                { id: 'thursday', name: 'الخميس' },
+                                { id: 'friday', name: 'الجمعة' },
+                                { id: 'saturday', name: 'السبت' },
+                                { id: 'sunday', name: 'الأحد' }
+                            ];
+                            %>
+                            
+                            <% days.forEach(day => { %>
+                                <div class="border border-gray-200 rounded-md p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-md font-medium text-gray-800"><%= day.name %></h3>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" class="form-checkbox h-5 w-5 text-primary rounded day-available" 
+                                                name="<%= day.id %>_available" 
+                                                value="1" 
+                                                <%= availability && availability[day.id] && availability[day.id].available ? 'checked' : '' %>
+                                                data-day="<%= day.id %>">
+                                            <span class="ml-2 text-sm text-gray-700">متاح</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="time-slots <%= availability && availability[day.id] && availability[day.id].available ? '' : 'hidden' %>" id="<%= day.id %>_slots">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">وقت البدء</label>
+                                                <input type="time" name="<%= day.id %>_start" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                    value="<%= availability && availability[day.id] ? availability[day.id].start || '09:00' : '09:00' %>">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">وقت الانتهاء</label>
+                                                <input type="time" name="<%= day.id %>_end" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                    value="<%= availability && availability[day.id] ? availability[day.id].end || '17:00' : '17:00' %>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">وقت الاستراحة (اختياري)</label>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <input type="time" name="<%= day.id %>_break_start" 
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                        value="<%= availability && availability[day.id] && availability[day.id].break_start ? availability[day.id].break_start : '' %>">
+                                                </div>
+                                                <div>
+                                                    <input type="time" name="<%= day.id %>_break_end" 
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                        value="<%= availability && availability[day.id] && availability[day.id].break_end ? availability[day.id].break_end : '' %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            
+                            <div class="mt-6">
+                                <button type="submit" class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition duration-300">
+                                    حفظ الجدول الأسبوعي
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Off / Blocked Dates -->
+        <div>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">الإجازات / التواريخ المحظورة</h2>
+                    <p class="text-sm text-gray-600 mt-1">حظر تواريخ محددة عندما تكون غير متاح</p>
+                </div>
+                <div class="p-6">
+                    <form id="timeOffForm" action="/psychologist/availability/block-date" method="POST">
+                        <div class="mb-4">
+                            <label for="timeoff_start" class="block text-sm font-medium text-gray-700 mb-1">تاريخ البدء</label>
+                            <input type="date" id="timeoff_start" name="date" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                min="<%= new Date().toISOString().split('T')[0] %>" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="timeoff_reason" class="block text-sm font-medium text-gray-700 mb-1">السبب (اختياري)</label>
+                            <input type="text" id="timeoff_reason" name="reason" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                placeholder="إجازة، عطلة، إلخ.">
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button type="submit" class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition duration-300">
+                                إضافة تواريخ محظورة
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current Blocked Dates -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800">التواريخ المحظورة الحالية</h2>
+                </div>
+                <div class="p-4">
+                    <% if (blockedDates && blockedDates.length > 0) { %>
+                        <div class="divide-y divide-gray-200">
+                            <% blockedDates.forEach(block => { %>
+                                <div class="py-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">
+                                            <%= new Date(block.date).toLocaleDateString('ar', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+                                        </p>
+                                        <% if (block.reason) { %>
+                                            <p class="text-xs text-gray-500"><%= block.reason %></p>
+                                        <% } %>
+                                    </div>
+                                    <a href="/psychologist/availability/unblock-date/<%= block.id %>" class="text-red-600 hover:text-red-800 text-sm">
+                                        إزالة
+                                    </a>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <p class="text-gray-500 text-sm">لا توجد تواريخ محظورة حاليًا</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle time slots visibility based on availability checkbox
+        const dayAvailableCheckboxes = document.querySelectorAll('.day-available');
+        
+        dayAvailableCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const day = this.getAttribute('data-day');
+                const slotsContainer = document.getElementById(`${day}_slots`);
+                
+                if (this.checked) {
+                    slotsContainer.classList.remove('hidden');
+                } else {
+                    slotsContainer.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Validate time off form
+        const timeOffForm = document.getElementById('timeOffForm');
+        const startDateInput = document.getElementById('timeoff_start');
+        
+        timeOffForm.addEventListener('submit', function(e) {
+            // Validation logic here
+        });
+        
+        // Validate weekly schedule form
+        const weeklyScheduleForm = document.getElementById('weeklyScheduleForm');
+        
+        weeklyScheduleForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            dayAvailableCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const day = checkbox.getAttribute('data-day');
+                    const startTime = document.querySelector(`[name="${day}_start"]`).value;
+                    const endTime = document.querySelector(`[name="${day}_end"]`).value;
+                    const breakStart = document.querySelector(`[name="${day}_break_start"]`).value;
+                    const breakEnd = document.querySelector(`[name="${day}_break_end"]`).value;
+                    
+                    if (!startTime || !endTime) {
+                        isValid = false;
+                        return;
+                    }
+                    
+                    if (startTime >= endTime) {
+                        isValid = false;
+                        return;
+                    }
+                    
+                    if ((breakStart && !breakEnd) || (!breakStart && breakEnd)) {
+                        isValid = false;
+                        return;
+                    }
+                    
+                    if (breakStart && breakEnd) {
+                        if (breakStart < startTime || breakStart >= endTime || 
+                            breakEnd <= startTime || breakEnd > endTime || 
+                            breakStart >= breakEnd) {
+                            isValid = false;
+                            return;
+                        }
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('يرجى التحقق من أوقات جدولك. تأكد من أن أوقات الانتهاء تأتي بعد أوقات البدء وأن أوقات الاستراحة ضمن ساعات عملك.');
+            }
+        });
+    });
+</script>

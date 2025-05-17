@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.io Debug</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    #log {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .info { color: blue; }
+    .warning { color: orange; }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    input {
+      padding: 8px;
+      margin-right: 10px;
+      width: 300px;
+    }
+    .control-panel {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Socket.io Debug Tool</h1>
+  
+  <div class="control-panel">
+    <h3>Connection</h3>
+    <button id="connect">Connect</button>
+    <button id="disconnect">Disconnect</button>
+    <span id="status">Disconnected</span>
+  </div>
+  
+  <div class="control-panel">
+    <h3>User Registration</h3>
+    <input type="text" id="userId" placeholder="User ID">
+    <select id="userRole">
+      <option value="employee">Employee</option>
+      <option value="psychologist">Psychologist</option>
+    </select>
+    <button id="register">Register User</button>
+  </div>
+  
+  <div class="control-panel">
+    <h3>Send Message</h3>
+    <input type="text" id="receiverId" placeholder="Receiver ID">
+    <input type="text" id="message" placeholder="Message">
+    <button id="sendMessage">Send Message</button>
+  </div>
+  
+  <div class="control-panel">
+    <h3>Mark Messages as Read</h3>
+    <input type="text" id="messageIds" placeholder="Message IDs (comma separated)">
+    <button id="markAsRead">Mark as Read</button>
+  </div>
+  
+  <h3>Event Log</h3>
+  <div id="log"></div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // DOM elements
+    const logElement = document.getElementById('log');
+    const statusElement = document.getElementById('status');
+    const connectButton = document.getElementById('connect');
+    const disconnectButton = document.getElementById('disconnect');
+    const registerButton = document.getElementById('register');
+    const sendMessageButton = document.getElementById('sendMessage');
+    const markAsReadButton = document.getElementById('markAsRead');
+    
+    // Log function
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = type;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logElement.appendChild(entry);
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // Socket.io instance
+    let socket;
+    
+    // Connect to socket
+    connectButton.addEventListener('click', () => {
+      try {
+        socket = io();
+        
+        socket.on('connect', () => {
+          log('Socket connected successfully with ID: ' + socket.id, 'success');
+          statusElement.textContent = 'Connected';
+          statusElement.style.color = 'green';
+        });
+        
+        socket.on('disconnect', (reason) => {
+          log('Socket disconnected: ' + reason, 'warning');
+          statusElement.textContent = 'Disconnected';
+          statusElement.style.color = 'red';
+        });
+        
+        socket.on('connect_error', (error) => {
+          log('Connection error: ' + error.message, 'error');
+          statusElement.textContent = 'Error';
+          statusElement.style.color = 'red';
+        });
+        
+        // Register event listeners for our custom events
+        socket.on('user-registered', (data) => {
+          log('User registered: ' + JSON.stringify(data), 'success');
+        });
+        
+        socket.on('message-sent', (data) => {
+          log('Message sent: ' + JSON.stringify(data), 'success');
+        });
+        
+        socket.on('new-message', (data) => {
+          log('New message received: ' + JSON.stringify(data), 'info');
+        });
+        
+        socket.on('messages-marked-read', (data) => {
+          log('Messages marked as read: ' + JSON.stringify(data), 'success');
+        });
+        
+        socket.on('user-typing', (data) => {
+          log('User typing: ' + JSON.stringify(data), 'info');
+        });
+        
+        socket.on('user-stop-typing', (data) => {
+          log('User stopped typing: ' + JSON.stringify(data), 'info');
+        });
+        
+        socket.on('error', (data) => {
+          log('Error: ' + JSON.stringify(data), 'error');
+        });
+        
+      } catch (error) {
+        log('Error initializing socket: ' + error.message, 'error');
+      }
+    });
+    
+    // Disconnect socket
+    disconnectButton.addEventListener('click', () => {
+      if (socket) {
+        socket.disconnect();
+        log('Manually disconnected socket', 'warning');
+      }
+    });
+    
+    // Register user
+    registerButton.addEventListener('click', () => {
+      if (!socket || !socket.connected) {
+        log('Socket not connected', 'error');
+        return;
+      }
+      
+      const userId = document.getElementById('userId').value;
+      const userRole = document.getElementById('userRole').value;
+      
+      if (!userId) {
+        log('User ID is required', 'error');
+        return;
+      }
+      
+      socket.emit('register-user', { userId, userRole });
+      log('Sent register-user event: ' + JSON.stringify({ userId, userRole }), 'info');
+    });
+    
+    // Send message
+    sendMessageButton.addEventListener('click', () => {
+      if (!socket || !socket.connected) {
+        log('Socket not connected', 'error');
+        return;
+      }
+      
+      const receiverId = document.getElementById('receiverId').value;
+      const message = document.getElementById('message').value;
+      
+      if (!receiverId || !message) {
+        log('Receiver ID and message are required', 'error');
+        return;
+      }
+      
+      socket.emit('send-message', { receiverId, message });
+      log('Sent send-message event: ' + JSON.stringify({ receiverId, message }), 'info');
+    });
+    
+    // Mark messages as read
+    markAsReadButton.addEventListener('click', () => {
+      if (!socket || !socket.connected) {
+        log('Socket not connected', 'error');
+        return;
+      }
+      
+      const messageIdsInput = document.getElementById('messageIds').value;
+      
+      if (!messageIdsInput) {
+        log('Message IDs are required', 'error');
+        return;
+      }
+      
+      const messageIds = messageIdsInput.split(',').map(id => id.trim());
+      
+      socket.emit('mark-as-read', { messageIds });
+      log('Sent mark-as-read event: ' + JSON.stringify({ messageIds }), 'info');
+    });
+    
+    // Initial log
+    log('Socket.io Debug Tool initialized', 'info');
+  </script>
+</body>
+</html>

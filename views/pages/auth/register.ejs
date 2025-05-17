@@ -1,0 +1,100 @@
+<div class="flex justify-center items-center py-12">
+  <div class="w-full max-w-md">
+    <div class="card shadow-lg">
+      <div class="card-header text-center">
+        <h1 class="text-2xl font-bold text-gray-800">إنشاء حساب</h1>
+      </div>
+      
+      <div class="card-body">
+        <% if (error) { %>
+          <div class="alert alert-error mb-6 animate__animated animate__fadeIn">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span><%= error %></span>
+            </div>
+          </div>
+        <% } %>
+        
+        <form action="/auth/register" method="POST">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="first_name" class="form-label">الاسم الأول</label>
+              <input type="text" id="first_name" name="first_name" class="form-input" required>
+            </div>
+            
+            <div>
+              <label for="last_name" class="form-label">الاسم الأخير</label>
+              <input type="text" id="last_name" name="last_name" class="form-input" required>
+            </div>
+          </div>
+          
+          <!-- Username field removed as we're using email as username -->
+          
+          <div class="mb-4">
+            <label for="email" class="form-label">البريد الإلكتروني</label>
+            <input type="email" id="email" name="email" class="form-input" required>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="gender" class="form-label">الجنس</label>
+              <select id="gender" name="gender" class="form-input" required>
+                <option value="">اختر الجنس</option>
+                <option value="male">ذكر</option>
+                <option value="female">أنثى</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="marital_status" class="form-label">الحالة الاجتماعية</label>
+              <select id="marital_status" name="marital_status" class="form-input" required>
+                <option value="">اختر الحالة</option>
+                <option value="single">أعزب/عزباء</option>
+                <option value="married">متزوج/ة</option>
+                <option value="divorced">مطلق/ة</option>
+                <option value="widowed">أرمل/ة</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label for="role" class="form-label">نوع الحساب</label>
+            <select id="role" name="role" class="form-input" required>
+              <option value="">اختر نوع الحساب</option>
+              <option value="employee">موظف</option>
+              <option value="psychologist">معالج نفسي</option>
+            </select>
+            <p class="text-sm text-gray-500 mt-1">ملاحظة: سيتم مراجعة حسابات المعالجين النفسيين قبل تفعيلها.</p>
+          </div>
+          
+          <div class="mb-4">
+            <label for="password" class="form-label">كلمة المرور</label>
+            <input type="password" id="password" name="password" class="form-input" required>
+          </div>
+          
+          <div class="mb-6">
+            <label for="confirm_password" class="form-label">تأكيد كلمة المرور</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
+          </div>
+          
+          <div class="mb-6">
+            <div class="flex items-center">
+              <input type="checkbox" id="terms" name="terms" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" required>
+              <label for="terms" class="mr-2 block text-sm text-gray-700">
+                أوافق على <a href="#" class="text-primary hover:text-primary-dark">شروط الخدمة</a> و <a href="#" class="text-primary hover:text-primary-dark">سياسة الخصوصية</a>
+              </label>
+            </div>
+          </div>
+          
+          <div>
+            <button type="submit" class="w-full btn-primary py-2 px-4 rounded-md">إنشاء حساب</button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="card-footer text-center">
+        <p class="text-gray-600">لديك حساب بالفعل؟ <a href="/auth/login" class="text-primary hover:text-primary-dark">تسجيل الدخول</a></p>
+      </div>
+    </div>
+  </div>
+</div>

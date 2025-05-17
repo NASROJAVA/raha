@@ -1,0 +1,49 @@
+<div class="flex justify-center items-center py-12">
+  <div class="w-full max-w-md">
+    <div class="card shadow-lg">
+      <div class="card-header text-center">
+        <h1 class="text-2xl font-bold text-gray-800">تسجيل الدخول</h1>
+      </div>
+      
+      <div class="card-body">
+        <% if (error) { %>
+          <div class="alert alert-error mb-6 animate__animated animate__fadeIn">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span><%= error %></span>
+            </div>
+          </div>
+        <% } %>
+        
+        <form action="/auth/login" method="POST">
+          <div class="mb-4">
+            <label for="username" class="form-label">البريد الإلكتروني</label>
+            <input type="email" id="username" name="username" class="form-input" required>
+          </div>
+          
+          <div class="mb-6">
+            <label for="password" class="form-label">كلمة المرور</label>
+            <input type="password" id="password" name="password" class="form-input" required>
+          </div>
+          
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center">
+              <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+              <label for="remember" class="mr-2 block text-sm text-gray-700">تذكرني</label>
+            </div>
+            
+            <a href="#" class="text-sm text-primary hover:text-primary-dark">نسيت كلمة المرور؟</a>
+          </div>
+          
+          <div>
+            <button type="submit" class="w-full btn-primary py-2 px-4 rounded-md">تسجيل الدخول</button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="card-footer text-center">
+        <p class="text-gray-600">ليس لديك حساب؟ <a href="/auth/register" class="text-primary hover:text-primary-dark">إنشاء حساب</a></p>
+      </div>
+    </div>
+  </div>
+</div>
