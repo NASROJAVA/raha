@@ -72,11 +72,19 @@
                 <div id="conversationsList" class="divide-y divide-gray-200">
                   <% if (conversations && conversations.length > 0) { %>
                     <% conversations.forEach(conversation => { %>
-                      <a href="/psychologist/messages/<%= conversation.userId %>" class="conversation-item block p-4 hover:bg-gray-50 transition duration-200 ease-in-out relative <%= conversation.unreadCount > 0 ? 'bg-blue-50' : '' %>">
+                      <a href="/psychologist/messages/<%= conversation.userId %>" class="conversation-item block p-4 hover:bg-gray-50 transition duration-200 ease-in-out relative <%= conversation.unreadCount > 0 ? 'bg-blue-50' : '' %>" data-user-id="<%= conversation.userId %>">
                         <div class="flex items-center">
+                          <!-- Online Status Indicator -->
+                          
                           <div class="flex-shrink-0">
                             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-sm">
-                              <%= conversation.userName.charAt(0) %>
+                              <% if (user.avatar) { %>
+                                <img src="<%= user.avatar %>" alt="<%= user.first_name %> <%= user.last_name %>" class="rounded-full w-10 h-10 object-cover" />
+                                  <% } else { %>
+                                  <div class="bg-primary text-primary-content rounded-full w-10 h-10 flex items-center justify-center text-lg font-medium">
+                                   <span><%= user.first_name.charAt(0) %><%= user.last_name.charAt(0) %></span>
+                             </div>
+                                         <% } %>
                             </div>
                           </div>
                           <div class="mr-3 flex-1">
@@ -92,48 +100,10 @@
                             <p class="text-sm text-gray-600 truncate mt-1"><%= conversation.lastMessage %></p>
                             
                             <!-- Status Indicators -->
-                            <div class="flex items-center mt-1">
-                              <% if (conversation.unreadCount > 0) { %>
-                                <span class="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-xs font-bold leading-none text-white bg-primary rounded-full ml-2">
-                                  <%= conversation.unreadCount %>
-                                </span>
-                              <% } %>
-                              <div class="flex space-x-2 space-x-reverse">
-                                <!-- Online Status -->
-                                <span class="text-xs text-gray-500">
-                                  <% if (conversation.isOnline) { %>
-                                    <span class="flex items-center">
-                                      <span class="h-2 w-2 bg-green-500 rounded-full ml-1"></span>
-                                      متصل الآن
-                                    </span>
-                                  <% } else { %>
-                                    <span class="flex items-center">
-                                      <span class="h-2 w-2 bg-gray-300 rounded-full ml-1"></span>
-                                      غير متصل
-                                    </span>
-                                  <% } %>
-                                </span>
-
-                                <!-- Availability Status -->
-                                <span class="text-xs mx-2">
-                                  <% if (conversation.isOnline) { %>
-                                    <span class="flex items-center text-green-600 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                      </svg>
-                                      متاح
-                                    </span>
-                                  <% } else { %>
-                                    <span class="flex items-center text-gray-500">
-                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                      غير متاح
-                                    </span>
-                                  <% } %>
-                                </span>
-                              </div>
-                            </div>
+<div class="online-status-indicator mr-2 relative">
+                            <div class="w-3 h-3 rounded-full bg-gray-300 status-dot"></div>
+                            <div class="last-seen text-xs text-gray-500 hidden absolute top-0 left-0 whitespace-nowrap"></div>
+                          </div>
                           </div>
                         </div>
                       </a>
@@ -168,10 +138,6 @@
               <!-- Stats Cards -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col items-center">
-                  <div class="text-3xl font-bold text-primary mb-1" id="totalConversations"><%= conversations ? conversations.length : 0 %></div>
-                  <div class="text-gray-500 text-sm">محادثة نشطة</div>
-                </div>
-                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col items-center">
                   <div class="text-3xl font-bold text-blue-500 mb-1" id="totalMessages">0</div>
                   <div class="text-gray-500 text-sm">رسالة اليوم</div>
                 </div>
@@ -200,13 +166,67 @@
       console.error('User ID not found');
       return;
     }
-    
+
+    // Initialize variables for tracking
+    let totalMessages = 0;
+    let onlineUsersCount = 0;
+    const statusDots = {};
+    const lastSeenTexts = {};
+
+    // Update online status indicator
+    function updateOnlineStatus(userId, isOnline, lastSeen) {
+      const conversationItem = document.querySelector(`.conversation-item[data-user-id="${userId}"]`);
+      if (!conversationItem) return;
+
+      const statusDot = conversationItem.querySelector('.status-dot');
+      const lastSeenText = conversationItem.querySelector('.last-seen');
+
+      if (statusDot) {
+        statusDot.classList.remove('bg-gray-300', 'bg-green-500');
+        statusDot.classList.add(isOnline ? 'bg-green-500' : 'bg-gray-300');
+      }
+
+      if (lastSeenText) {
+        if (isOnline) {
+          lastSeenText.classList.add('hidden');
+        } else if (lastSeen) {
+          const timeAgo = getTimeAgo(new Date(lastSeen));
+          lastSeenText.textContent = `آخر ظهور ${timeAgo}`;
+          lastSeenText.classList.remove('hidden');
+        }
+      }
+    }
+
+    // Format time ago in Arabic
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+
+      if (diffInSeconds < 60) return 'الآن';
+      if (diffInSeconds < 3600) return `منذ ${Math.floor(diffInSeconds / 60)} دقيقة`;
+      if (diffInSeconds < 86400) return `منذ ${Math.floor(diffInSeconds / 3600)} ساعة`;
+      return `منذ ${Math.floor(diffInSeconds / 86400)} يوم`;
+    }
+
     // Initialize Socket.io
     const socket = io();
+
+    // Register user with Socket.io
+    socket.emit('register-user', {
+      userId: parseInt(userId),
+      userRole: 'psychologist'
+    });
+
+    // Listen for user status changes
+    socket.on('user-status-change', (data) => {
+      updateOnlineStatus(data.userId, data.isOnline, data.lastSeen);
+    });
+
+    // Send heartbeat every 30 seconds to keep online status active
+    setInterval(() => {
+      socket.emit('heartbeat', userId);
+    }, 30000);
     
-    // Initialize counters
-    let totalMessages = 0;
-    let onlineUsers = 0;
     const totalMessagesElement = document.getElementById('totalMessages');
     const onlineUsersElement = document.getElementById('onlineUsers');
     const unreadTotalElement = document.getElementById('unreadTotal');
@@ -245,15 +265,23 @@
       });
       
       // Update online users count
-      onlineUsers++;
+      onlineUsersCount++;
       if (onlineUsersElement) {
-        onlineUsersElement.textContent = onlineUsers;
+        onlineUsersElement.textContent = onlineUsersCount;
       }
     });
     
     socket.on('disconnect', function() {
       console.log('Socket disconnected');
       updateConnectionStatus('disconnected');
+      
+      // Update online users count
+      if (onlineUsersCount > 0) {
+        onlineUsersCount--;
+        if (onlineUsersElement) {
+          onlineUsersElement.textContent = onlineUsersCount;
+        }
+      }
     });
     
     socket.on('connect_error', function(error) {
@@ -312,7 +340,7 @@
           const svgIcon = timeElement.querySelector('svg');
           timeElement.innerHTML = '';
           if (svgIcon) timeElement.appendChild(svgIcon);
-          timeElement.appendChild(document.createTextNode(new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })));
+          timeElement.appendChild(document.createTextNode(new Date().toLocaleTimeString('ar-DZ', { hour: '2-digit', minute: '2-digit' })));
         }
         
         // Highlight the conversation item
@@ -377,7 +405,7 @@
               </div>
               <div class="text-right">
                 <div class="font-bold">${senderName}</div>
-                <div class="text-xs text-gray-500">${new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="text-xs text-gray-500">${new Date().toLocaleTimeString('ar-DZ', { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
             </div>
             <div class="bg-gray-100 p-3 rounded-lg text-right">${message.message}</div>
@@ -572,6 +600,40 @@
 
 <!-- Include chat styles -->
 <link rel="stylesheet" href="/css/chat-styles.css">
+
+<style>
+  .online-status-indicator {
+    position: relative;
+  }
+  
+  .status-dot {
+    transition: background-color 0.3s ease;
+  }
+  
+  .status-dot.bg-green-500 {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(16, 185, 129, 0.3);
+  }
+  
+  .last-seen {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .online-status-indicator:hover .last-seen:not(.hidden) {
+    opacity: 1;
+  }
+</style>
 
 <!-- Include psychologist messages styles -->
 <link rel="stylesheet" href="/css/psychologist-messages.css">

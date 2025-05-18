@@ -1,0 +1,302 @@
+<!-- Main training index page that displays all types of training content -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+  .category-card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  
+  .category-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .category-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .content-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .content-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .content-image {
+    height: 160px;
+    object-fit: cover;
+    width: 100%;
+  }
+  
+  .content-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+  }
+  
+  .search-box {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+  <!-- Hero section -->
+  <div class="bg-gradient-to-b from-primary/10 to-white py-12 px-6 rounded-2xl shadow-sm mb-10 animate__animated animate__fadeIn">
+    <div class="text-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">المواد التدريبية</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto mb-8">استكشف مجموعة متنوعة من المواد التدريبية المصممة لمساعدتك على تطوير مهاراتك وتعزيز صحتك النفسية</p>
+      
+      <!-- Search box -->
+      <div class="max-w-xl mx-auto search-box">
+        <form action="/training/search" method="GET" class="flex rounded-full overflow-hidden bg-white">
+          <input type="text" name="query" placeholder="ابحث عن مواد تدريبية..." 
+              class="flex-grow px-6 py-3 border-0 focus:ring-2 focus:ring-primary/30 focus:outline-none" required>
+          <button type="submit" 
+                class="px-6 py-3 bg-primary text-white hover:bg-primary-600 transition-colors duration-300">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content type categories -->
+  <div class="mb-16 animate__animated animate__fadeInUp animate__delay-1s">
+    <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">تصفح حسب نوع المحتوى</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Documents category -->
+      <a href="/training/documents" class="category-card bg-blue-50 p-8 text-center hover:bg-blue-100">
+        <div class="category-icon text-blue-500">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">مستندات ومقالات</h3>
+        <p class="text-gray-600">اقرأ مقالات ومستندات تدريبية عن مختلف المواضيع</p>
+      </a>
+      
+      <!-- Videos category -->
+      <a href="/training/videos" class="category-card bg-red-50 p-8 text-center hover:bg-red-100">
+        <div class="category-icon text-red-500">
+          <i class="fas fa-video"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">فيديوهات تدريبية</h3>
+        <p class="text-gray-600">شاهد فيديوهات تعليمية وتدريبية مفيدة</p>
+      </a>
+      
+      <!-- All content category -->
+      <a href="/training/all" class="category-card bg-purple-50 p-8 text-center hover:bg-purple-100">
+        <div class="category-icon text-purple-500">
+          <i class="fas fa-th-large"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">جميع المحتويات</h3>
+        <p class="text-gray-600">استعرض كل المواد التدريبية المتاحة</p>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Featured content -->
+  <div class="mb-16 animate__animated animate__fadeInUp animate__delay-2s">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-800">المحتوى المميز</h2>
+      <a href="/training/all" class="text-primary hover:text-primary-600">عرض الكل</a>
+    </div>
+    
+    <% 
+      // Define default variables if not provided
+      const featuredContent = typeof featured !== 'undefined' ? featured : [];
+      
+      // Content type mappings
+      const contentTypeIcons = {
+        'article': 'fas fa-newspaper',
+        'document': 'fas fa-file-alt',
+        'video': 'fas fa-video',
+        'audio': 'fas fa-headphones'
+      };
+      
+      const contentTypeBadges = {
+        'article': 'bg-blue-100 text-blue-800',
+        'document': 'bg-green-100 text-green-800',
+        'video': 'bg-red-100 text-red-800',
+        'audio': 'bg-purple-100 text-purple-800'
+      };
+      
+      const contentTypeLabels = {
+        'article': 'مقال',
+        'document': 'مستند',
+        'video': 'فيديو',
+        'audio': 'صوتي'
+      };
+    %>
+    
+    <% if (featuredContent && featuredContent.length > 0) { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% featuredContent.forEach(content => { %>
+          <% 
+            const contentType = content.content_type || 'document';
+            const badge = contentTypeBadges[contentType] || 'bg-gray-100 text-gray-800';
+            const label = contentTypeLabels[contentType] || 'محتوى';
+            
+            // Determine the URL based on content type
+            let contentUrl = '/training/';
+            if (contentType === 'video') {
+              contentUrl += 'videos/' + content.id;
+            } else {
+              contentUrl += 'documents/' + content.id;
+            }
+            
+            // Determine the thumbnail
+            let thumbnail = content.thumbnail_url || '/img/placeholder.png';
+            if (contentType === 'article' && !content.thumbnail_url) {
+              thumbnail = '/img/article-placeholder.jpg';
+            } else if (contentType === 'document' && !content.thumbnail_url) {
+              thumbnail = '/img/document-placeholder.jpg';
+            } else if (contentType === 'video' && !content.thumbnail_url) {
+              thumbnail = '/img/video-placeholder.jpg';
+            }
+          %>
+          
+          <a href="<%= contentUrl %>" class="content-card bg-white shadow-md">
+            <div class="relative">
+              <img src="<%= thumbnail %>" alt="<%= content.title %>" class="content-image">
+              <span class="content-type-badge <%= badge %>"><%= label %></span>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2"><%= content.title %></h3>
+              <p class="text-sm text-gray-600 mb-4 line-clamp-3"><%= content.description %></p>
+              <div class="flex justify-between items-center">
+                <span class="text-primary font-medium">عرض المحتوى</span>
+                <span class="text-sm text-gray-500">
+                  <i class="far fa-calendar-alt me-1"></i>
+                  <%= new Date(content.created_at || Date.now()).toLocaleDateString('ar-SA') %>
+                </span>
+              </div>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12 bg-gray-50 rounded-xl">
+        <div class="text-5xl text-gray-300 mb-4"><i class="fas fa-star"></i></div>
+        <p class="text-gray-500 mb-2">لا توجد محتويات مميزة متاحة حالياً</p>
+        <p class="text-gray-400 text-sm">ترقب إضافة محتويات جديدة قريباً</p>
+      </div>
+    <% } %>
+  </div>
+  
+  <!-- Recently added content -->
+  <div class="mb-16 animate__animated animate__fadeInUp animate__delay-3s">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-800">أحدث المحتويات</h2>
+      <a href="/training/all" class="text-primary hover:text-primary-600">عرض الكل</a>
+    </div>
+    
+    <% 
+      // Define default variables if not provided
+      const recentContent = typeof recent !== 'undefined' ? recent : [];
+    %>
+    
+    <% if (recentContent && recentContent.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <% recentContent.forEach(content => { %>
+          <% 
+            const contentType = content.content_type || 'document';
+            const icon = contentTypeIcons[contentType] || 'fas fa-file';
+            const label = contentTypeLabels[contentType] || 'محتوى';
+            
+            // Determine the URL based on content type
+            let contentUrl = '/training/';
+            if (contentType === 'video') {
+              contentUrl += 'videos/' + content.id;
+            } else {
+              contentUrl += 'documents/' + content.id;
+            }
+          %>
+          
+          <a href="<%= contentUrl %>" class="content-card bg-white shadow-md p-5">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-primary">
+                <i class="<%= icon %>"></i>
+              </div>
+              <span class="mr-3 text-sm text-gray-600"><%= label %></span>
+            </div>
+            <h3 class="text-md font-semibold text-gray-800 mb-2 line-clamp-2"><%= content.title %></h3>
+            <p class="text-xs text-gray-500 mt-2">
+              <i class="far fa-calendar-alt me-1"></i>
+              <%= new Date(content.created_at || Date.now()).toLocaleDateString('ar-SA') %>
+            </p>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12 bg-gray-50 rounded-xl">
+        <div class="text-5xl text-gray-300 mb-4"><i class="fas fa-clock"></i></div>
+        <p class="text-gray-500 mb-2">لا توجد محتويات حديثة متاحة حالياً</p>
+        <p class="text-gray-400 text-sm">ترقب إضافة محتويات جديدة قريباً</p>
+      </div>
+    <% } %>
+  </div>
+  
+  <!-- Call to action -->
+  <div class="bg-primary text-white rounded-2xl p-8 mb-8 animate__animated animate__fadeInUp animate__delay-4s">
+    <div class="flex flex-col md:flex-row items-center gap-8">
+      <div class="md:w-2/3">
+        <h2 class="text-2xl font-bold mb-4">هل تريد المزيد من المحتوى التدريبي؟</h2>
+        <p class="mb-6 opacity-90">اشترك في نشرتنا الإخبارية للحصول على أحدث المواد التدريبية وإشعارات عن المحتويات الجديدة.</p>
+        <form class="flex flex-col sm:flex-row gap-3">
+          <input type="email" placeholder="أدخل بريدك الإلكتروني" class="px-5 py-3 rounded-lg flex-grow text-gray-800">
+          <button type="submit" class="px-5 py-3 bg-white text-primary font-bold rounded-lg hover:bg-gray-100">اشتراك</button>
+        </form>
+      </div>
+      <div class="md:w-1/3 flex justify-center">
+        <div class="w-40 h-40 rounded-full bg-white/10 flex items-center justify-center">
+          <i class="fas fa-envelope-open-text text-6xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Back to top button -->
+<button id="back-to-top" class="fixed bottom-6 left-6 p-3 rounded-full bg-primary text-white shadow-lg transition-all duration-300 opacity-0 translate-y-10 hidden z-50 hover:bg-primary-600">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Back to top button functionality
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    if (backToTopButton) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTopButton.classList.remove('opacity-0', 'translate-y-10', 'hidden');
+          backToTopButton.classList.add('opacity-100', 'translate-y-0');
+        } else {
+          backToTopButton.classList.add('opacity-0', 'translate-y-10');
+          backToTopButton.classList.remove('opacity-100', 'translate-y-0');
+          setTimeout(() => {
+            if (window.scrollY <= 300) {
+              backToTopButton.classList.add('hidden');
+            }
+          }, 300);
+        }
+      });
+      
+      backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    }
+  });
+</script>

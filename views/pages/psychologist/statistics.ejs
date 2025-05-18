@@ -47,46 +47,6 @@
             </div>
           </div>
           
-          <!-- Common Stressors -->
-          <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-              <div class="badge badge-primary mr-2">3</div>
-              العوامل الشائعة المسببة للضغط النفسي
-            </h2>
-            <div class="overflow-x-auto">
-              <table class="table table-zebra w-full">
-                <thead>
-                  <tr>
-                    <th class="text-right">العامل</th>
-                    <th class="text-right">النسبة المئوية</th>
-                    <th class="text-right">المؤشر</th>
-                  </tr>
-                </thead>
-                <tbody id="stressorsTable">
-                  <% if (stressors && stressors.length > 0) { %>
-                    <% stressors.forEach(stressor => { %>
-                      <tr>
-                        <td><%= stressor.name %></td>
-                        <td><%= stressor.percentage %>%</td>
-                        <td>
-                          <progress class="progress progress-primary w-full" value="<%= stressor.percentage %>" max="100"></progress>
-                        </td>
-                      </tr>
-                    <% }); %>
-                  <% } else { %>
-                    <tr>
-                      <td colspan="3" class="text-center">
-                        <div class="alert alert-info">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          <span>لا توجد بيانات متاحة</span>
-                        </div>
-                      </td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-          </div>
           
           <!-- Demographic Breakdown -->
           <div>
@@ -134,10 +94,10 @@
     const stressLevelChart = new Chart(stressLevelCtx, {
       type: 'bar',
       data: {
-        labels: ['منخفض جداً (1-2)', 'منخفض (3-4)', 'متوسط (5-6)', 'مرتفع (7-8)', 'مرتفع جداً (9-10)'],
+        labels: ['منخفض جداً (0-20%)', 'منخفض (21-40%)', 'متوسط (41-60%)', 'مرتفع (61-80%)', 'مرتفع جداً (81-100%)'],
         datasets: [{
           label: 'عدد المستخدمين',
-          data: <%- JSON.stringify(stressLevelDistribution || [10, 25, 40, 15, 5]) %>,
+          data: JSON.parse('<%- JSON.stringify(stressLevelDistribution || [0, 0, 0, 0, 0]) %>'),
           backgroundColor: [
             'rgba(52, 211, 153, 0.6)', // success
             'rgba(96, 165, 250, 0.6)', // info
@@ -160,8 +120,14 @@
         scales: {
           x: {
             beginAtZero: true,
+            max: 100,
             grid: {
               color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
             }
           },
           y: {
@@ -188,7 +154,7 @@
         labels: ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
         datasets: [{
           label: 'متوسط مستوى الضغط النفسي',
-          data: <%- JSON.stringify(weeklyTrend || [5.2, 6.1, 5.8, 5.5, 5.9, 4.7, 4.3]) %>,
+          data: JSON.parse('<%- JSON.stringify((weeklyTrend && weeklyTrend.data) || [0, 0, 0, 0, 0, 0, 0]) %>'),
           fill: true,
           backgroundColor: 'rgba(79, 70, 229, 0.2)',
           borderColor: 'rgba(79, 70, 229, 1)',
@@ -204,14 +170,28 @@
         scales: {
           y: {
             beginAtZero: true,
-            max: 10,
+            max: 100,
             grid: {
               color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
             }
           },
           x: {
             grid: {
               display: false
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y + '%';
+              }
             }
           }
         },
@@ -222,20 +202,22 @@
     
     // Gender Chart
     const genderCtx = document.getElementById('genderChart').getContext('2d');
-    const genderData = <%- JSON.stringify(genderDistribution || {male: 60, female: 40}) %>;
+    const genderData = JSON.parse('<%- JSON.stringify(genderDistribution || { male: 0, female: 0 }) %>');
     const genderChart = new Chart(genderCtx, {
       type: 'doughnut',
       data: {
         labels: ['ذكر', 'أنثى'],
         datasets: [{
-          data: [genderData.male, genderData.female],
+          data: [genderData.male, genderData.female, genderData.other],
           backgroundColor: [
             'rgba(79, 70, 229, 0.6)', // primary
-            'rgba(236, 72, 153, 0.6)'  // pink
+            'rgba(236, 72, 153, 0.6)',  // pink
+            'rgba(52, 211, 153, 0.6)'  // success
           ],
           borderColor: [
             'rgba(79, 70, 229, 1)',
-            'rgba(236, 72, 153, 1)'
+            'rgba(236, 72, 153, 1)',
+            'rgba(52, 211, 153, 1)'
           ],
           borderWidth: 1
         }]
@@ -253,18 +235,13 @@
     
     // Marital Status Chart
     const maritalCtx = document.getElementById('maritalStatusChart').getContext('2d');
-    const maritalData = <%- JSON.stringify(maritalDistribution || {
-      single: 45,
-      married: 35,
-      divorced: 15,
-      widowed: 5
-    }) %>;
+    const maritalData = JSON.parse('<%- JSON.stringify(maritalDistribution || { single: 0, married: 0, divorced: 0, widowed: 0, other: 0 }) %>');
     const maritalChart = new Chart(maritalCtx, {
       type: 'doughnut',
       data: {
-        labels: ['أعزب/عزباء', 'متزوج/ة', 'مطلق/ة', 'أرمل/ة'],
+        labels: ['أعزب/عزباء', 'متزوج/ة', 'مطلق/ة', 'أرمل/ة', 'أخرى'],
         datasets: [{
-          data: [maritalData.single, maritalData.married, maritalData.divorced, maritalData.widowed],
+          data: [maritalData.single, maritalData.married, maritalData.divorced, maritalData.widowed, maritalData.other],
           backgroundColor: [
             'rgba(79, 70, 229, 0.6)', // primary
             'rgba(52, 211, 153, 0.6)', // success

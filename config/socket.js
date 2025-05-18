@@ -119,23 +119,80 @@ function initializeSocket(server) {
       });
     });
     
-    // Register user
+    // Handle user registration
     socket.on('register-user', (userData) => {
-      console.log(`User registered: ${userData.userId}, role: ${userData.userRole}`);
+      const userId = userData.userId.toString();
       
-      // Store user data
-      onlineUsers.set(userData.userId.toString(), {
+      // Store user data with socket ID
+      const existingUser = onlineUsers.get(userId);
+      const lastSeen = existingUser ? existingUser.lastSeen : new Date();
+      
+      onlineUsers.set(userId, {
         socketId: socket.id,
         role: userData.userRole,
-        lastSeen: new Date()
+        lastSeen: lastSeen,
+        isOnline: true
       });
+
+      // Broadcast user's online status to all clients
+      io.emit('user-status-change', {
+        userId: userId,
+        isOnline: true,
+        lastSeen: lastSeen
+      });
+
+      // Send current online status of all users to the newly connected user
+      const onlineStatuses = Array.from(onlineUsers.entries()).map(([uid, data]) => ({
+        userId: uid,
+        isOnline: data.isOnline,
+        lastSeen: data.lastSeen
+      }));
+      socket.emit('initial-online-statuses', onlineStatuses);
+
+      console.log(`User ${userId} registered with socket ${socket.id}`);
+    });
+    
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      console.log('Client disconnected');
       
-      // If psychologist logged in, broadcast to all clients
-      if (userData.userRole === 'psychologist') {
-        io.emit('psychologist-status-change', {
-          psychologistId: userData.userId,
-          isOnline: true
-        });
+      // Find user by socket ID and update their status
+      for (const [userId, userData] of onlineUsers.entries()) {
+        if (userData.socketId === socket.id) {
+          const lastSeen = new Date();
+          
+          // Update last seen time and online status
+          userData.lastSeen = lastSeen;
+          userData.isOnline = false;
+          
+          // Broadcast user's offline status with last seen time
+          io.emit('user-status-change', {
+            userId: userId,
+            isOnline: false,
+            lastSeen: lastSeen
+          });
+          
+          break;
+        }
+      }
+    });
+    
+    // Handle heartbeat to keep online status accurate
+    socket.on('heartbeat', (userId) => {
+      const userData = onlineUsers.get(userId.toString());
+      if (userData) {
+        const now = new Date();
+        userData.lastSeen = now;
+        userData.isOnline = true;
+        
+        // Broadcast updated status if user was previously offline
+        if (!userData.isOnline) {
+          io.emit('user-status-change', {
+            userId: userId.toString(),
+            isOnline: true,
+            lastSeen: now
+          });
+        }
       }
     });
     
@@ -406,21 +463,20 @@ function initializeSocket(server) {
     socket.on('disconnect', () => {
       console.log('Client disconnected');
       
-      // Find the user who disconnected
+      // Find user by socket ID and update their status
       for (const [userId, userData] of onlineUsers.entries()) {
         if (userData.socketId === socket.id) {
-          console.log(`User disconnected: ${userId}, role: ${userData.role}`);
+          const lastSeen = new Date();
           
-          // Remove user from online users
-          onlineUsers.delete(userId);
+          // Update last seen time but don't delete the user
+          userData.lastSeen = lastSeen;
           
-          // If psychologist disconnected, broadcast to all clients
-          if (userData.role === 'psychologist') {
-            io.emit('psychologist-status-change', {
-              psychologistId: parseInt(userId),
-              isOnline: false
-            });
-          }
+          // Broadcast user's offline status with last seen time
+          io.emit('user-status-change', {
+            userId: userId,
+            isOnline: false,
+            lastSeen: lastSeen
+          });
           
           break;
         }

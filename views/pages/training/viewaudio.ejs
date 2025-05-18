@@ -1,0 +1,533 @@
+
+<!-- Enhanced Audio Player Page for training audio materials -->
+<%
+  // Define safe variables if not provided by the controller
+  let audioMaterial = null;
+  if (typeof material !== 'undefined') {
+    audioMaterial = material;
+  }
+  
+  // Check for audio URL in the content or file_url fields
+  let audioUrl = '';
+  let hasAudio = false;
+  let audioType = '';
+  let audioError = '';
+  
+  if (audioMaterial) {
+    // Check file_url first as it's most likely for audio files
+    if (audioMaterial.file_url && audioMaterial.file_url.trim() !== '') {
+      audioUrl = audioMaterial.file_url;
+      hasAudio = true;
+      console.log('Using audio from file_url:', audioUrl);
+    } 
+    // Then check content field
+    else if (audioMaterial.content && audioMaterial.content.trim() !== '') {
+      audioUrl = audioMaterial.content;
+      hasAudio = true;
+      console.log('Using audio from content field:', audioUrl);
+    }
+    // External URL as fallback
+    else if (audioMaterial.external_url && audioMaterial.external_url.trim() !== '') {
+      audioUrl = audioMaterial.external_url;
+      hasAudio = true;
+      console.log('Using audio from external_url:', audioUrl);
+    }
+  }
+  
+  // Check if the URL is relative (doesn't start with http:// or https://)
+  if (hasAudio && !audioUrl.startsWith('http://') && !audioUrl.startsWith('https://')) {
+    // Make it an absolute path if it's a relative URL
+    audioUrl = '/' + audioUrl.replace(/^\/+/, '');
+  }
+  
+  // Determine audio format from URL extension
+  if (hasAudio) {
+    const urlLower = audioUrl.toLowerCase();
+    if (urlLower.endsWith('.mp3')) {
+      audioType = 'audio/mp3';
+    } else if (urlLower.endsWith('.wav')) {
+      audioType = 'audio/wav';
+    } else if (urlLower.endsWith('.ogg')) {
+      audioType = 'audio/ogg';
+    } else if (urlLower.endsWith('.m4a')) {
+      audioType = 'audio/mp4';
+    } else if (urlLower.endsWith('.aac')) {
+      audioType = 'audio/aac';
+    } else {
+      // Default to MP3 if can't determine
+      audioType = 'audio/mpeg';
+    }
+  } else {
+    audioError = 'لم يتم العثور على ملف صوتي صالح.';
+  }
+  
+  // Audio metadata
+  const title = audioMaterial ? audioMaterial.title : "مشغل الصوت";
+  const description = audioMaterial ? audioMaterial.description : "";
+  const duration = audioMaterial && audioMaterial.duration ? audioMaterial.duration : "";
+  const createdAt = audioMaterial && audioMaterial.created_at ? new Date(audioMaterial.created_at).toLocaleDateString('ar-SA') : "";
+  const author = audioMaterial && audioMaterial.author ? audioMaterial.author : "";
+  
+  // Define safe related audio variable
+  let relatedAudios = [];
+  if (typeof related !== 'undefined' && Array.isArray(related)) {
+    relatedAudios = related;
+  }
+  
+  // Audio ID for progress tracking
+  const audioId = audioMaterial ? audioMaterial.id : "default";
+%>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  .minimal-audio-container {
+    background-color: #e6f0ff;
+    border-radius: 9999px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 650px;
+    margin: 20px auto;
+  }
+  
+  .minimal-audio-player {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #2c75d8;
+    height: 48px;
+  }
+  
+  .minimal-play-button {
+    background: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgb(179, 17, 17);
+    margin-right: 8px;
+    padding: 0;
+  }
+  
+  .minimal-time {
+    font-size: 14px;
+    color: white;
+    margin: 0 8px;
+    min-width: 70px;
+  }
+  
+  .minimal-progress-container {
+    flex-grow: 1;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    margin: 0 8px;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .minimal-progress-bar {
+    height: 100%;
+    background-color: white;
+    border-radius: 9999px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  
+  .minimal-volume-button {
+    background: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgb(175, 24, 24);
+    padding: 0;
+  }
+  
+  .minimal-options-button {
+    background: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    padding: 0;
+  }
+  
+  .navbar {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .audio-item {
+    transition: background-color 0.2s ease;
+  }
+  
+  .audio-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+  
+  .audio-item.active {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    border-right: 3px solid var(--color-primary);
+  }
+</style>
+
+<div class="w-full" id="audio-container" data-audio-id="<%= audioMaterial ? audioMaterial.id : 'undefined' %>">
+  <!-- Top Navigation Bar -->
+  <div class="navbar shadow-sm sticky top-0 z-10 px-4 py-2 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a href="/training" class="text-primary hover:text-primary-600">
+        <i class="fas fa-arrow-right ml-1"></i>
+        العودة إلى المواد التدريبية
+      </a>
+      <h1 class="text-lg font-bold text-gray-800 hidden md:block">
+        <i class="fas fa-headphones ml-2 text-primary"></i>
+        مشغل الصوت
+      </h1>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-6">
+    <% if (audioMaterial) { %>
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Main audio player -->
+        <div class="lg:col-span-3">
+          <div class="mb-4">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2"><%= title %></h1>
+            <div class="flex flex-wrap items-center text-sm text-gray-500">
+              <% if (createdAt) { %>
+                <span class="ml-4"><i class="far fa-calendar-alt ml-1"></i> <%= createdAt %></span>
+              <% } %>
+              <% if (duration) { %>
+                <span class="ml-4"><i class="far fa-clock ml-1"></i> <%= duration %></span>
+              <% } %>
+              <% if (author) { %>
+                <span><i class="far fa-user ml-1"></i> <%= author %></span>
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="mb-6">
+            <% /* Always show the player regardless of hasAudio */ %>
+              <div class="p-6">
+                <!-- Native Audio Element (hidden but used for actual playback) -->
+                <audio id="audio-element" preload="metadata" style="display:none;">
+                  <source src="<%= audioUrl %>" type="<%= audioType %>">
+                  <source src="<%= audioUrl %>" type="audio/mpeg">
+                  <source src="<%= audioUrl %>" type="audio/ogg">
+                  <p>متصفحك لا يدعم تشغيل الملفات الصوتية. يمكنك <a href="<%= audioUrl %>" target="_blank" class="text-primary">تنزيل الملف الصوتي</a> للاستماع إليه.</p>
+                </audio>
+                
+                <!-- Audio Player exactly matching image design -->
+                <div style="background-color: #2a71d9; border-radius: 9999px; padding: 8px 12px; display: flex; align-items: center; max-width: 580px; margin: 0 auto; box-shadow: 0 2px 6px rgba(0,0,0,0.1); height: 44px;">
+                  <!-- Two circular controls on left -->
+                  <div style="display: flex; margin-right: 10px;">
+                    <button id="audio-backward" style="background-color: white; border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 6px;">
+                      <i class="fas fa-backward" style="color: #2c75d8; font-size: 14px;">Stop</i>
+                    </button>
+                    <button id="audio-play" style="background-color: white; border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-play" id="play-icon" style="color: #2c75d8; font-size: 14px;">Play</i>
+                    </button>
+                  </div>
+                  
+                  <!-- Progress Bar -->
+                  <div id="audio-progress" style="flex-grow: 1; height: 4px; background-color: rgba(255, 255, 255, 0.3); border-radius: 9999px; position: relative; cursor: pointer;">
+                    <div id="audio-progress-bar" style="height: 100%; background-color: #85b5ff; border-radius: 9999px; width: 0%;"></div>
+                  </div>
+                  
+                  <!-- Time Display on right -->
+                  <div style="font-size: 13px; color: white; margin-left: 12px; min-width: 82px; text-align: right;">
+                    <span id="duration">0:19</span> / <span id="current-time">0:00</span>
+                  </div>
+                  
+                  <!-- Volume Button -->
+                  <button id="audio-mute" style="background-color: rgba(255, 255, 255, 0.25); border: none; width: 34px; height: 34px; margin-left: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-volume-up" id="volume-icon" style="color: white; font-size: 14px;">+V</i>
+                  </button>
+                </div>
+              </div>
+            <% if (!hasAudio) { %>
+              <!-- Warning shown if no audio, but we still show the player UI -->
+              <div class="p-4 bg-yellow-50 rounded-lg text-center mt-4">
+                <p class="text-yellow-700">
+                  <i class="fas fa-exclamation-triangle ml-2"></i>
+                  لا يوجد ملف صوتي مرتبط بهذه المادة التدريبية.
+                </p>
+              </div>
+              
+              <!-- Show audio URL if available -->
+              <% if (audioUrl) { %>
+              <div class="mt-2 text-xs text-gray-500 text-center">
+                <p>رابط الملف: <a href="<%= audioUrl %>" target="_blank" class="text-primary"><%= audioUrl %></a></p>
+              </div>
+              <% } %>
+            <% } %>
+          </div>
+          
+          <% if (description) { %>
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 class="text-xl font-bold text-gray-800 mb-4">الوصف</h2>
+              <div class="prose prose-sm max-w-none text-gray-600">
+                <%= description %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Fallback when no audio is provided -->
+      <div class="bg-red-100 p-6 rounded-lg shadow-md text-center">
+        <div class="text-5xl text-red-300 mb-4"><i class="fas fa-exclamation-circle"></i></div>
+        <p class="text-red-600 text-lg mb-2">عذراً، الملف الصوتي غير متوفر!</p>
+        <p class="text-red-500 mb-4">لم نتمكن من العثور على الملف الصوتي المطلوب.</p>
+        <a href="/training" class="btn btn-primary">العودة إلى المواد التدريبية</a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const audioElement = document.getElementById('audio-element');
+    
+    // If no audio element is found, exit early
+    if (!audioElement) return;
+    
+    // We'll add the backward button event listener after we get all UI elements to avoid redeclaration
+    
+    // Add error handling for the audio element
+    audioElement.addEventListener('error', function(e) {
+      console.error('Audio playback error:', e);
+      
+      // Show error message
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'bg-red-100 text-red-600 p-3 rounded mt-4';
+      errorMessage.innerHTML = `
+        <p><i class="fas fa-exclamation-triangle ml-2"></i> خطأ في تشغيل الملف الصوتي</p>
+        <p class="text-sm text-red-500 mt-1">يمكنك محاولة تنزيل الملف مباشرة للاستماع إليه</p>
+      `;
+      
+      // Check if the audio player exists and append the error message
+      const audioContainer = document.querySelector('[style*="background-color: #f3f4f6"]');
+      if (audioContainer && !document.querySelector('.bg-red-100.text-red-600')) {
+        audioContainer.insertAdjacentElement('afterend', errorMessage);
+      }
+    }, true);
+    
+    // Listen for when the audio can play
+    audioElement.addEventListener('canplay', function() {
+      console.log('Audio can now play');
+      // Update UI to show it's ready
+      const playBtn = document.getElementById('audio-play');
+      if (playBtn) {
+        playBtn.disabled = false;
+        playBtn.classList.remove('opacity-50');
+      }
+    });
+    
+    // Get UI elements
+    const playBtn = document.getElementById('audio-play');
+    const playIcon = document.getElementById('play-icon');
+    const backwardBtn = document.getElementById('audio-backward');
+    const muteBtn = document.getElementById('audio-mute');
+    const volumeIcon = document.getElementById('volume-icon');
+    const progressBar = document.getElementById('audio-progress-bar');
+    const progressContainer = document.getElementById('audio-progress');
+    const currentTimeDisplay = document.getElementById('current-time');
+    const durationDisplay = document.getElementById('duration');
+    
+    // Add backward button functionality
+    if (backwardBtn) {
+      backwardBtn.addEventListener('click', function() {
+        audioElement.currentTime = Math.max(0, audioElement.currentTime - 10);
+      });
+    }
+    
+    // Audio ID for progress tracking
+    const audioContainer = document.getElementById('audio-container');
+    const audioId = audioContainer ? audioContainer.dataset.audioId : 'default';
+    const storageKey = `audio_progress_${audioId}`;
+    
+    // Convert time in seconds to MM:SS format
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    }
+    
+    // Update progress displays
+    function updateProgress() {
+      if (audioElement.duration && !isNaN(audioElement.duration)) {
+        const percent = (audioElement.currentTime / audioElement.duration) * 100;
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
+        
+        // Save progress to localStorage
+        if (audioElement.currentTime > 1 && audioElement.currentTime < (audioElement.duration - 1)) {
+          localStorage.setItem(storageKey, audioElement.currentTime.toString());
+        }
+        
+        // If we're near the end, clear the saved time to restart next time
+        if (audioElement.duration - audioElement.currentTime < 1) {
+          localStorage.removeItem(storageKey);
+        }
+      }
+    }
+    
+    // Set initial UI state - disable play button until audio is ready
+    if (playBtn) {
+      playBtn.disabled = true;
+      playBtn.classList.add('opacity-50');
+    }
+    
+    // Load duration once metadata is loaded
+    audioElement.addEventListener('loadedmetadata', function() {
+      if (durationDisplay && !isNaN(audioElement.duration)) {
+        durationDisplay.textContent = formatTime(audioElement.duration);
+      }
+      
+      // Load saved progress if available
+      const savedTime = localStorage.getItem(storageKey);
+      if (savedTime) {
+        const seekTime = parseFloat(savedTime);
+        if (!isNaN(seekTime) && seekTime > 0 && seekTime < audioElement.duration - 10) {
+          audioElement.currentTime = seekTime;
+          
+          // Show resume notification
+          const notification = document.createElement('div');
+          notification.className = 'text-xs text-gray-500 text-center mt-2';
+          notification.innerHTML = `تم استئناف الاستماع من حيث توقفت`;
+          
+          const audioContainer = document.querySelector('.minimal-audio-container');
+          if (audioContainer) {
+            audioContainer.insertAdjacentElement('afterend', notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+              if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+              }
+            }, 3000);
+          }
+        }
+      }
+    });
+    
+    // Update progress while playing
+    audioElement.addEventListener('timeupdate', updateProgress);
+    
+    // Play/Pause toggle
+    if (playBtn && playIcon) {
+      playBtn.addEventListener('click', function() {
+        if (this.disabled) return;
+        
+        if (audioElement.paused) {
+          // Attempt to play with error handling
+          const playPromise = audioElement.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(function() {
+              // Playback started successfully
+              playIcon.classList.remove('fa-play');
+              playIcon.classList.add('fa-pause');
+            }).catch(function(error) {
+              // Playback failed
+              console.error('Error playing audio:', error);
+              
+              // Show error message
+              const errorMessage = document.createElement('div');
+              errorMessage.className = 'bg-red-100 text-red-600 p-3 rounded mt-4';
+              errorMessage.innerHTML = `
+                <p><i class="fas fa-exclamation-triangle ml-2"></i> خطأ في تشغيل الملف الصوتي</p>
+                <p class="text-sm text-red-500 mt-1">رمز الخطأ: ${error.name}</p>
+              `;
+              
+              // Append the error message
+              const audioContainer = document.querySelector('.minimal-audio-container');
+              if (audioContainer && !document.querySelector('.bg-red-100.text-red-600')) {
+                audioContainer.insertAdjacentElement('afterend', errorMessage);
+              }
+            });
+          }
+        } else {
+          audioElement.pause();
+          playIcon.classList.remove('fa-pause');
+          playIcon.classList.add('fa-play');
+        }
+      });
+    }
+    
+    // Mute toggle
+    if (muteBtn && volumeIcon) {
+      muteBtn.addEventListener('click', function() {
+        audioElement.muted = !audioElement.muted;
+        if (audioElement.muted) {
+          volumeIcon.classList.remove('fa-volume-up');
+          volumeIcon.classList.add('fa-volume-mute');
+        } else {
+          volumeIcon.classList.remove('fa-volume-mute');
+          volumeIcon.classList.add('fa-volume-up');
+        }
+      });
+    }
+    
+    // Progress bar seeking
+    if (progressContainer) {
+      progressContainer.addEventListener('click', function(e) {
+        const rect = progressContainer.getBoundingClientRect();
+        const seekPercent = (e.clientX - rect.left) / rect.width;
+        audioElement.currentTime = audioElement.duration * seekPercent;
+      });
+    }
+    
+    // Handle audio end
+    audioElement.addEventListener('ended', function() {
+      if (playIcon) {
+        playIcon.classList.remove('fa-pause');
+        playIcon.classList.add('fa-play');
+      }
+      
+      // Clear progress tracking
+      localStorage.removeItem(storageKey);
+    });
+    
+    // Handle keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Space bar: Play/Pause
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        if (playBtn) playBtn.click();
+      }
+      // Left arrow: Backward
+      else if (e.code === 'ArrowLeft' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        audioElement.currentTime = Math.max(0, audioElement.currentTime - 10); // Skip backward 10 seconds
+      }
+      // M key: Mute toggle
+      else if (e.code === 'KeyM' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        if (muteBtn) muteBtn.click();
+      }
+    });
+  });
+</script>
+
+<!-- Direct Audio Link Fallback -->
+<% if (hasAudio) { %>
+<div class="mt-4 p-4 bg-gray-50 rounded-lg text-center">
+  <p class="text-sm text-gray-600 mb-2">إذا واجهتك مشكلة في تشغيل الملف الصوتي، يمكنك تنزيله مباشرة</p>
+  <a href="<%= audioUrl %>" target="_blank" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+    <i class="fas fa-download ml-2"></i>
+    تنزيل الملف الصوتي
+  </a>
+</div>
+<% } %>

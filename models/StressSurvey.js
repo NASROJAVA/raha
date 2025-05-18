@@ -111,7 +111,7 @@ class StressSurvey {
   static async getAnonymousStatistics() {
     try {
       // Get average stress level
-      const query = 'SELECT AVG(stress_level) as average FROM stress_surveys';
+      const query = 'SELECT ROUND(AVG(stress_level), 1) as average FROM stress_surveys';
       const avgRows = await db.all(query, []);
       
       // Get count of surveys
@@ -122,9 +122,9 @@ class StressSurvey {
       const categoryQuery = `
         SELECT 
           CASE 
-            WHEN stress_level BETWEEN 1 AND 3 THEN 'low'
-            WHEN stress_level BETWEEN 4 AND 6 THEN 'medium'
-            WHEN stress_level BETWEEN 7 AND 10 THEN 'high'
+            WHEN stress_level BETWEEN 0 AND 33 THEN 'low'
+            WHEN stress_level BETWEEN 34 AND 66 THEN 'medium'
+            WHEN stress_level BETWEEN 67 AND 100 THEN 'high'
           END as category,
           COUNT(*) as count
         FROM stress_surveys
@@ -142,7 +142,7 @@ class StressSurvey {
       });
       
       return {
-        average: avgRows.length > 0 ? parseFloat(avgRows[0].average).toFixed(1) : 0,
+        average: avgRows.length > 0 ? parseFloat(avgRows[0].average) : 0,
         count: countRows.length > 0 ? countRows[0].count : 0,
         categories
       };
@@ -161,29 +161,27 @@ class StressSurvey {
       const query = `
         SELECT 
           CASE 
-            WHEN stress_level BETWEEN 1 AND 2 THEN '1-2'
-            WHEN stress_level BETWEEN 3 AND 4 THEN '3-4'
-            WHEN stress_level BETWEEN 5 AND 6 THEN '5-6'
-            WHEN stress_level BETWEEN 7 AND 8 THEN '7-8'
-            WHEN stress_level BETWEEN 9 AND 10 THEN '9-10'
-          END as range,
+            WHEN stress_level BETWEEN 0 AND 20 THEN 0
+            WHEN stress_level BETWEEN 21 AND 40 THEN 1
+            WHEN stress_level BETWEEN 41 AND 60 THEN 2
+            WHEN stress_level BETWEEN 61 AND 80 THEN 3
+            WHEN stress_level BETWEEN 81 AND 100 THEN 4
+          END as range_index,
           COUNT(*) as count
         FROM stress_surveys
-        GROUP BY range
-        ORDER BY range
+        GROUP BY range_index
+        ORDER BY range_index
       `;
       
       const rows = await db.all(query, []);
       
       // Format the data for chart.js
-      const distribution = [0, 0, 0, 0, 0]; // [1-2, 3-4, 5-6, 7-8, 9-10]
+      const distribution = [0, 0, 0, 0, 0]; // [0-20%, 21-40%, 41-60%, 61-80%, 81-100%]
       
       rows.forEach(row => {
-        if (row.range === '1-2') distribution[0] = row.count;
-        else if (row.range === '3-4') distribution[1] = row.count;
-        else if (row.range === '5-6') distribution[2] = row.count;
-        else if (row.range === '7-8') distribution[3] = row.count;
-        else if (row.range === '9-10') distribution[4] = row.count;
+        if (row.range_index !== null) {
+          distribution[row.range_index] = row.count;
+        }
       });
       
       return distribution;
@@ -254,9 +252,9 @@ class StressSurvey {
       const query = `
         SELECT 
           strftime('%w', completed_at) as day_of_week,
-          AVG(stress_level) as average
+          ROUND(AVG(stress_level), 1) as average
         FROM stress_surveys
-        WHERE completed_at >= date('now', '-7 days')
+        WHERE completed_at >= date('now', '-30 days')
         GROUP BY day_of_week
         ORDER BY day_of_week
       `;
@@ -264,12 +262,12 @@ class StressSurvey {
       const rows = await db.all(query, []);
       
       // Format the data for chart.js
-      const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayLabels = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
       const data = Array(7).fill(0); // Initialize with zeros
       
       rows.forEach(row => {
         const dayIndex = parseInt(row.day_of_week);
-        data[dayIndex] = parseFloat(row.average).toFixed(1);
+        data[dayIndex] = parseFloat(row.average || 0);
       });
       
       return {

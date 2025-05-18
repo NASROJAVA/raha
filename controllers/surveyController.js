@@ -31,21 +31,24 @@ const surveyController = {
         answers.push(parseInt(answer));
       }
       
-      // Calculate stress level based on answers (1-5 scale)
+      // Calculate stress level as a percentage out of 100%
+      // Each question is on a 1-5 scale, so:
+      // - Minimum possible total = 10 (all answers are 1)
+      // - Maximum possible total = 50 (all answers are 5)
       const total = answers.reduce((sum, value) => sum + value, 0);
       
-      // Calculate average on 1-5 scale to satisfy database constraint
-      // First calculate the average of all answers (which will be between 1-5)
-      const average = total / answers.length;
+      // Convert to percentage:
+      // ((total - min) / (max - min)) * 100
+      // ((total - 10) / (50 - 10)) * 100
+      const stressLevel = Math.round(((total - 10) / 40) * 100);
       
-      // Scale the average to ensure it's between 1-5 (even if all answers are 5)
-      // This ensures we stay within the database constraint
-      const stressLevel = Math.min(5, Math.max(1, Math.round(average * 10) / 10));
+      // Ensure the stress level stays within 0-100 range
+      const finalStressLevel = Math.min(100, Math.max(0, stressLevel));
       
       // Create survey data
       const surveyData = {
         user_id: userId,
-        stress_level: stressLevel,
+        stress_level: finalStressLevel,
         survey_data: { answers }
       };
       

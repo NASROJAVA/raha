@@ -22,6 +22,7 @@
               <li><a href="/dashboard" class="<%= path === '/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
               <li><a href="/training" class="<%= path.startsWith('/training') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المواد التدريبية</a></li>
               <li><a href="/community" class="<%= path.startsWith('/community') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المجتمع</a></li>
+              <li><a href="/survey/history" class="<%= path === '/survey/history' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">سجل الاستبيانات</a></li>
             <% } else if (user.role === 'psychologist') { %>
               <li><a href="/psychologist/dashboard" class="<%= path === '/psychologist/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
               <li><a href="/psychologist/messages" class="<%= path.startsWith('/psychologist/messages') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">الرسائل</a></li>
@@ -100,6 +101,7 @@
                 <li><a href="/dashboard" class="<%= path === '/dashboard' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">لوحة التحكم</a></li>
                 <li><a href="/training" class="<%= path.startsWith('/training') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المواد التدريبية</a></li>
                 <li><a href="/community" class="<%= path.startsWith('/community') ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">المجتمع</a></li>
+                <li><a href="/survey/history" class="<%= path === '/survey/history' ? 'bg-primary/10 text-primary font-medium' : '' %> transition-all duration-200 rounded-lg hover:bg-primary/10">سجل الاستبيانات</a></li>
               </ul>
             </li>
           <% } else if (user.role === 'psychologist') { %>
