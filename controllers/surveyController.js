@@ -13,8 +13,22 @@ const surveyController = {
   // Submit survey
   submitSurvey: async (req, res) => {
     try {
+      console.log('Session data:', req.session);
+      
+      if (!req.session || !req.session.user || !req.session.user.id) {
+        console.error('No user session found');
+        return res.render('pages/survey/form', { 
+          title: 'استبيان الضغط اليومي | راحة',
+          user: req.session?.user || null,
+          error: 'الرجاء تسجيل الدخول مرة أخرى'
+        });
+      }
+
       const userId = req.session.user.id;
       const formData = req.body;
+      
+      console.log('User ID:', userId);
+      console.log('Form data:', formData);
       
       // Process the answers from form data
       const answers = [];

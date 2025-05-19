@@ -95,11 +95,9 @@ const authController = {
       
       // Create new user with the selected role
       const userData = {
-        username,
+        name: `${first_name} ${last_name}`.trim(),
         email,
         password,
-        first_name,
-        last_name,
         gender,
         marital_status,
         role

@@ -175,10 +175,11 @@
           <label tabindex="0" class="btn btn-ghost btn-circle avatar hover:bg-primary/10 transition-all duration-200">
             <div class="relative rounded-full w-10 h-10">
               <% if (user.avatar) { %>
-                <img src="<%= user.avatar %>" alt="<%= user.first_name %> <%= user.last_name %>" class="rounded-full w-10 h-10 object-cover" />
+                <img src="<%= user.avatar %>" alt="<%= user.name %>" class="rounded-full w-10 h-10 object-cover" />
               <% } else { %>
                 <div class="bg-primary text-primary-content rounded-full w-10 h-10 flex items-center justify-center text-lg font-medium">
-                  <span><%= user.first_name.charAt(0) %><%= user.last_name.charAt(0) %></span>
+                  <% const nameParts = user.name ? user.name.split(' ') : ['', '']; %>
+                  <span><%= nameParts[0].charAt(0) %><%= nameParts[1] ? nameParts[1].charAt(0) : '' %></span>
                 </div>
               <% } %>
               <% if (user.role === 'psychologist') { %>

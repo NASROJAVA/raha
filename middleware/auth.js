@@ -2,9 +2,20 @@
 
 // Check if user is authenticated
 const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
+  console.log('Session in auth middleware:', req.session);
+  console.log('User in session:', req.session?.user);
+
+  if (req.session && req.session.user && req.session.user.id) {
     return next();
   }
+
+  // Clear any invalid session
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) console.error('Error destroying session:', err);
+    });
+  }
+
   res.redirect('/auth/login');
 };
 
